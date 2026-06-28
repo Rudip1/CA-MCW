@@ -1,0 +1,33 @@
+# D435i Camera Configuration for ViroFighter UVC-1
+# Position: (0.045, 0, 1.773) relative to base_link
+# Orientation: Tilted 60° downward, faces FRONT
+# WARNING: Due to 60° downward tilt, laser scan may see floor more than obstacles
+
+camera:
+  name: "d435i"
+  
+  # TF Frames (verified from tf2_tools view_frames)
+  link_frame: "camera_d435i_link"
+  color_optical_frame: "camera_d435i_color_optical_frame"
+  depth_optical_frame: "camera_d435i_depth_optical_frame"
+  imu_frame: "camera_d435i_imu_frame"
+  
+  # Topics (verified from ros2 topic list)
+  rgb_topic: "/d435i/rgb/d435i_rgb/image_raw"
+  rgb_camera_info_topic: "/d435i/rgb/d435i_rgb/camera_info"
+  depth_topic: "/d435i/depth/d435i_depth/depth/image_raw"
+  depth_camera_info_topic: "/d435i/depth/d435i_depth/depth/camera_info"
+  points_topic: "/d435i/depth/d435i_depth/points"
+  imu_topic: "/d435i/imu/d435i_imu_controller/out"
+  
+  # Physical properties
+  height_from_ground: 1.773  # meters
+  tilt_angle_deg: 60.0       # degrees downward
+  
+  # Depth camera specs
+  depth_range_min: 0.6   # meters
+  depth_range_max: 6.0   # meters
+  horizontal_fov: 87.0   # degrees
+  
+  # depth_to_scan output
+  scan_topic: "/scan"

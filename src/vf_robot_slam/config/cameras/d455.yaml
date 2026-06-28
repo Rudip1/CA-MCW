@@ -1,0 +1,33 @@
+# D455 Camera Configuration for ViroFighter UVC-1
+# Position: (-0.525, 0, 0.429) relative to base_link
+# Orientation: Faces REAR (180° rotated)
+# RECOMMENDED for laser scan - good height for obstacle detection
+
+camera:
+  name: "d455"
+  
+  # TF Frames (verified from tf2_tools view_frames)
+  link_frame: "camera_d455_link"
+  color_optical_frame: "camera_d455_color_optical_frame"
+  depth_optical_frame: "camera_d455_depth_optical_frame"
+  imu_frame: "camera_d455_imu_frame"
+  
+  # Topics (verified from ros2 topic list)
+  rgb_topic: "/d455/rgb/d455_rgb/image_raw"
+  rgb_camera_info_topic: "/d455/rgb/d455_rgb/camera_info"
+  depth_topic: "/d455/depth/d455_depth/depth/image_raw"
+  depth_camera_info_topic: "/d455/depth/d455_depth/depth/camera_info"
+  points_topic: "/d455/depth/d455_depth/points"
+  imu_topic: "/d455/imu/d455_imu_controller/out"
+  
+  # Physical properties
+  height_from_ground: 0.429  # meters
+  tilt_angle_deg: 0.0        # horizontal (faces rear)
+  
+  # Depth camera specs
+  depth_range_min: 0.6   # meters
+  depth_range_max: 6.0   # meters
+  horizontal_fov: 87.0   # degrees
+  
+  # depth_to_scan output
+  scan_topic: "/scan"

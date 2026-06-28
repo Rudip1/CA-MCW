@@ -1,0 +1,68 @@
+# Dual Camera Configuration for ViroFighter UVC-1
+# Uses both D435i (front/top) and D455 (rear) cameras
+
+cameras:
+  d435i:
+    name: "d435i"
+    
+    # TF Frames
+    link_frame: "camera_d435i_link"
+    color_optical_frame: "camera_d435i_color_optical_frame"
+    depth_optical_frame: "camera_d435i_depth_optical_frame"
+    imu_frame: "camera_d435i_imu_frame"
+    
+    # Topics
+    rgb_topic: "/d435i/rgb/d435i_rgb/image_raw"
+    rgb_camera_info_topic: "/d435i/rgb/d435i_rgb/camera_info"
+    depth_topic: "/d435i/depth/d435i_depth/depth/image_raw"
+    depth_camera_info_topic: "/d435i/depth/d435i_depth/depth/camera_info"
+    points_topic: "/d435i/depth/d435i_depth/points"
+    imu_topic: "/d435i/imu/d435i_imu_controller/out"
+    
+    # Physical properties
+    height_from_ground: 1.773
+    tilt_angle_deg: 60.0
+    
+    # Depth specs
+    depth_range_min: 0.6
+    depth_range_max: 6.0
+    
+    # RGBD sync output (for RTAB-Map dual camera mode)
+    rgbd_image_topic: "/rgbd_image/d435i"
+    
+    # Individual scan topic (before merging)
+    scan_topic: "/scan_d435i"
+
+  d455:
+    name: "d455"
+    
+    # TF Frames
+    link_frame: "camera_d455_link"
+    color_optical_frame: "camera_d455_color_optical_frame"
+    depth_optical_frame: "camera_d455_depth_optical_frame"
+    imu_frame: "camera_d455_imu_frame"
+    
+    # Topics
+    rgb_topic: "/d455/rgb/d455_rgb/image_raw"
+    rgb_camera_info_topic: "/d455/rgb/d455_rgb/camera_info"
+    depth_topic: "/d455/depth/d455_depth/depth/image_raw"
+    depth_camera_info_topic: "/d455/depth/d455_depth/depth/camera_info"
+    points_topic: "/d455/depth/d455_depth/points"
+    imu_topic: "/d455/imu/d455_imu_controller/out"
+    
+    # Physical properties
+    height_from_ground: 0.429
+    tilt_angle_deg: 0.0
+    
+    # Depth specs
+    depth_range_min: 0.6
+    depth_range_max: 6.0
+    
+    # RGBD sync output (for RTAB-Map dual camera mode)
+    rgbd_image_topic: "/rgbd_image/d455"
+    
+    # Individual scan topic (before merging)
+    scan_topic: "/scan_d455"
+
+# Merged scan output
+merged_scan_topic: "/scan"

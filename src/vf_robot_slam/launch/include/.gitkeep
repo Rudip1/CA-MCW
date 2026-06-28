@@ -1,0 +1,10 @@
+# Include Launch Files
+# 
+# This directory can contain reusable launch file fragments.
+# Currently, the main launch files handle all logic internally.
+# 
+# If you need to refactor, you can create:
+#   - rtabmap_single.launch.py
+#   - rtabmap_dual.launch.py
+#   - rgbd_sync.launch.py
+#   - etc.
