@@ -1,0 +1,6 @@
+run_id,notes,start_x,start_y,start_yaw,g1_x,g1_y,g1_yaw,g2_x,g2_y,g2_yaw,g3_x,g3_y,g3_yaw
+0,corridor fwd narrow,9.0,0.5,3.14,7.0,0.5,3.14,5.0,0.5,3.14,3.0,0.5,3.14
+1,corridor fwd wide,9.0,-1.0,3.14,7.0,-1.0,3.14,5.0,-1.0,3.14,3.0,-1.0,3.14
+2,corridor return narrow,3.0,0.5,0.0,5.0,0.5,0.0,7.0,0.5,0.0,9.0,0.5,0.0
+3,corridor return wide,3.0,-1.0,0.0,5.0,-1.0,0.0,7.0,-1.0,0.0,9.0,-1.0,0.0
+4,diagonal crossing,9.0,0.5,3.14,6.0,-0.5,2.36,3.0,0.5,3.14

@@ -1,0 +1,5 @@
+run_id,notes,start_x,start_y,start_yaw,g1_x,g1_y,g1_yaw,g2_x,g2_y,g2_yaw
+0,eval corridor narrow fwd,9.0,0.5,3.14,6.0,0.5,3.14,3.0,0.5,3.14
+1,eval corridor wide fwd,9.0,-1.0,3.14,6.0,-1.0,3.14,3.0,-1.0,3.14
+2,eval corridor narrow ret,3.0,0.5,0.0,6.0,0.5,0.0,9.0,0.5,0.0
+3,eval corridor wide ret,3.0,-1.0,0.0,6.0,-1.0,0.0,9.0,-1.0,0.0
