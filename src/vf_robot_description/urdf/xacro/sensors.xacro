@@ -1,0 +1,448 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- ========================================================= -->
+  <!--  SENSORS XACRO — included by uvc1_virofighter.xacro       -->
+  <!--  Sensors: D455, D435i, 4x Fisheye, 5x Ultrasonic         -->
+  <!-- ========================================================= -->
+
+  <!-- ============================= -->
+  <!-- 1. Camera D455 RealSense (Rear base, looking backward) -->
+  <!-- ============================= -->
+
+  <joint name="camera_d455_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_d455_link"/>
+    <origin xyz="-0.52457 0 0.42892" rpy="0 0 3.1416"/>
+  </joint>
+
+  <link name="camera_d455_link">
+    <visual name="d455_visual">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.029 0.124 0.025"/>
+      </geometry>
+    </visual>
+    <collision name="camera_d455_collision">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.029 0.124 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.159"/>
+      <inertia ixx="1.2e-05" ixy="0" ixz="0"
+               iyy="2.1e-04" iyz="0"
+               izz="2.2e-04"/>
+    </inertial>
+  </link>
+
+  <link name="camera_d455_color_optical_frame"/>
+  <joint name="camera_d455_color_optical_joint" type="fixed">
+    <parent link="camera_d455_link"/>
+    <child link="camera_d455_color_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <link name="camera_d455_depth_optical_frame"/>
+  <joint name="camera_d455_depth_optical_joint" type="fixed">
+    <parent link="camera_d455_link"/>
+    <child link="camera_d455_depth_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <link name="camera_d455_imu_frame"/>
+  <joint name="camera_d455_imu_joint" type="fixed">
+    <parent link="camera_d455_link"/>
+    <child link="camera_d455_imu_frame"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Gazebo plugins for D455 -->
+  <gazebo reference="camera_d455_link">
+    <sensor name="d455_rgb" type="camera">
+      <pose>0 0 0 0 0 0</pose>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <camera>
+        <horizontal_fov>1.5</horizontal_fov>
+        <image><width>1280</width><height>800</height><format>R8G8B8</format></image>
+        <clip><near>0.05</near><far>20.0</far></clip>
+      </camera>
+      <plugin name="d455_rgb_camera_controller" filename="libgazebo_ros_camera.so">
+        <ros><namespace>/d455/rgb</namespace></ros>
+        <frame_name>camera_d455_color_optical_frame</frame_name>
+        <image_topic_name>/d455/color/image_raw</image_topic_name>
+        <camera_info_topic_name>/d455/color/camera_info</camera_info_topic_name>
+      </plugin>
+    </sensor>
+
+    <!--
+      DEPTH SENSOR — reduced resolution for Gazebo performance
+      ─────────────────────────────────────────────────────────
+      Original: 1280×720 @ 30 Hz → Gazebo CPU bottleneck → ~1.5 Hz actual
+               → pointcloud timestamps 150+ seconds stale
+               → pc2scan TF lookup fails silently every frame
+
+      Fixed:   424×240 @ 30 Hz → Gazebo delivers actual 15–30 Hz
+               → pointcloud timestamps <2 seconds stale
+               → pc2scan TF lookup succeeds → /scan publishes correctly
+
+      424×240 matches RealSense D455 low-resolution mode (real hardware).
+      RTAB-Map visual SLAM quality unaffected — uses RGB not depth resolution.
+      Nav2 obstacle detection unaffected — laserscan derived from pointcloud.
+      visualize:=false — stops Gazebo rendering depth camera view in GUI,
+      frees GPU for physics and RGB cameras.
+    -->
+    <sensor name="d455_depth" type="depth">
+      <pose>0 0 0 0 0 0</pose>
+      <always_on>true</always_on>
+      <visualize>false</visualize>        <!-- was true — GPU render overhead removed -->
+      <update_rate>30</update_rate>
+      <camera>
+        <horizontal_fov>1.52</horizontal_fov>
+        <image>
+          <width>424</width>              <!-- was 1280 — 1/3 pixels, ~9x less data -->
+          <height>240</height>            <!-- was 720 -->
+        </image>
+        <clip><near>0.6</near><far>6.0</far></clip>
+      </camera>
+      <plugin name="d455_depth_camera_controller" filename="libgazebo_ros_camera.so">
+        <ros><namespace>/d455/depth</namespace></ros>
+        <frame_name>camera_d455_depth_optical_frame</frame_name>
+        <depth_image_topic_name>image_raw</depth_image_topic_name>
+        <point_cloud_topic_name>points</point_cloud_topic_name>
+        <depth_image_camera_info_topic_name>camera_info</depth_image_camera_info_topic_name>
+        <point_cloud_cutoff>0.6</point_cloud_cutoff>
+        <point_cloud_cutoff_max>6.0</point_cloud_cutoff_max>
+        <point_cloud>true</point_cloud>
+      </plugin>
+    </sensor>
+
+    <sensor name="d455_imu" type="imu">
+      <always_on>true</always_on>
+      <update_rate>200</update_rate>
+      <plugin name="d455_imu_controller" filename="libgazebo_ros_imu_sensor.so">
+        <ros><namespace>/d455/imu</namespace></ros>
+        <frame_name>camera_d455_imu_frame</frame_name>
+        <topic_name>/d455/imu/data_raw</topic_name>
+        <gaussian_noise>0.0005</gaussian_noise>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ============================= -->
+  <!-- 2. Camera D435i RealSense (Top, tilted forward) -->
+  <!-- ============================= -->
+
+  <joint name="camera_d435i_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_d435i_link"/>
+    <origin xyz="0.04512 0 1.77259" rpy="0 1.0472 0"/>
+  </joint>
+
+  <link name="camera_d435i_link">
+    <visual name="d435i_visual">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://vf_robot_description/meshes/sensors/camera_d435i.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+    <collision name="d435i_collision">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.09 0.025 0.025"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.072"/>
+      <inertia ixx="6.25e-05" ixy="0" ixz="0"
+               iyy="7.0e-05" iyz="0"
+               izz="7.0e-05"/>
+    </inertial>
+  </link>
+
+  <link name="camera_d435i_color_optical_frame"/>
+  <joint name="camera_d435i_color_optical_joint" type="fixed">
+    <parent link="camera_d435i_link"/>
+    <child link="camera_d435i_color_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <link name="camera_d435i_depth_optical_frame"/>
+  <joint name="camera_d435i_depth_optical_joint" type="fixed">
+    <parent link="camera_d435i_link"/>
+    <child link="camera_d435i_depth_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <link name="camera_d435i_imu_frame"/>
+  <joint name="camera_d435i_imu_joint" type="fixed">
+    <parent link="camera_d435i_link"/>
+    <child link="camera_d435i_imu_frame"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Gazebo plugins for D435i -->
+  <gazebo reference="camera_d435i_link">
+    <sensor name="d435i_rgb" type="camera">
+      <pose>0 0 0 0 0 0</pose>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <camera>
+        <horizontal_fov>1.5</horizontal_fov>
+        <image><width>1280</width><height>800</height><format>R8G8B8</format></image>
+        <clip><near>0.05</near><far>20.0</far></clip>
+      </camera>
+      <plugin name="d435i_rgb_camera_controller" filename="libgazebo_ros_camera.so">
+        <ros><namespace>/d435i/rgb</namespace></ros>
+        <frame_name>camera_d435i_color_optical_frame</frame_name>
+        <image_topic_name>/d435i/color/image_raw</image_topic_name>
+        <camera_info_topic_name>/d435i/color/camera_info</camera_info_topic_name>
+      </plugin>
+    </sensor>
+
+    <!--
+      DEPTH SENSOR — reduced resolution for Gazebo performance
+      ─────────────────────────────────────────────────────────
+      Same fix as D455. See D455 depth sensor comment above for full explanation.
+      424×240 matches RealSense D435i low-resolution mode (real hardware).
+    -->
+    <sensor name="d435i_depth" type="depth">
+      <pose>0 0 0 0 0 0</pose>
+      <always_on>true</always_on>
+      <visualize>false</visualize>        <!-- was true — GPU render overhead removed -->
+      <update_rate>30</update_rate>
+      <camera>
+        <horizontal_fov>1.52</horizontal_fov>
+        <image>
+          <width>424</width>              <!-- was 1280 — 1/3 pixels, ~9x less data -->
+          <height>240</height>            <!-- was 720 -->
+        </image>
+        <clip><near>0.6</near><far>6.0</far></clip>
+      </camera>
+      <plugin name="d435i_depth_camera_controller" filename="libgazebo_ros_camera.so">
+        <ros><namespace>/d435i/depth</namespace></ros>
+        <frame_name>camera_d435i_depth_optical_frame</frame_name>
+        <depth_image_topic_name>image_raw</depth_image_topic_name>
+        <point_cloud_topic_name>points</point_cloud_topic_name>
+        <depth_image_camera_info_topic_name>camera_info</depth_image_camera_info_topic_name>
+        <point_cloud_cutoff>0.6</point_cloud_cutoff>
+        <point_cloud_cutoff_max>6.0</point_cloud_cutoff_max>
+        <point_cloud>true</point_cloud>
+      </plugin>
+    </sensor>
+
+    <sensor name="d435i_imu" type="imu">
+      <always_on>true</always_on>
+      <update_rate>200</update_rate>
+      <plugin name="d435i_imu_controller" filename="libgazebo_ros_imu_sensor.so">
+        <ros><namespace>/d435i/imu</namespace></ros>
+        <frame_name>camera_d435i_imu_frame</frame_name>
+        <topic_name>/d435i/imu/data_raw</topic_name>
+        <gaussian_noise>0.0005</gaussian_noise>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- ============================= -->
+  <!-- 3. Fisheye Cameras (4x on Top dome) -->
+  <!-- ============================= -->
+
+  <!-- Fisheye Front -->
+  <joint name="camera_fisheye_front_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_fisheye_front_link"/>
+    <origin xyz="0.07 0 1.845" rpy="0 0.628 -0.0255"/>
+  </joint>
+  <link name="camera_fisheye_front_link">
+    <visual name="fisheye_front">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><sphere radius="0.00346"/></geometry>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="1e-06" ixy="0" ixz="0" iyy="1e-06" iyz="0" izz="1e-06"/>
+    </inertial>
+  </link>
+  <link name="camera_fisheye_front_optical_frame"/>
+  <joint name="camera_fisheye_front_optical_joint" type="fixed">
+    <parent link="camera_fisheye_front_link"/>
+    <child link="camera_fisheye_front_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <!-- Fisheye Left -->
+  <joint name="camera_fisheye_left_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_fisheye_left_link"/>
+    <origin xyz="-0.2 0.18 1.845" rpy="0 0.628 1.5708"/>
+  </joint>
+  <link name="camera_fisheye_left_link">
+    <visual name="fisheye_left">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><sphere radius="0.00346"/></geometry>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="1e-06" ixy="0" ixz="0" iyy="1e-06" iyz="0" izz="1e-06"/>
+    </inertial>
+  </link>
+  <link name="camera_fisheye_left_optical_frame"/>
+  <joint name="camera_fisheye_left_optical_joint" type="fixed">
+    <parent link="camera_fisheye_left_link"/>
+    <child link="camera_fisheye_left_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <!-- Fisheye Right -->
+  <joint name="camera_fisheye_right_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_fisheye_right_link"/>
+    <origin xyz="-0.2 -0.18 1.845" rpy="0 0.628 -1.5708"/>
+  </joint>
+  <link name="camera_fisheye_right_link">
+    <visual name="fisheye_right">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><sphere radius="0.00346"/></geometry>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="1e-06" ixy="0" ixz="0" iyy="1e-06" iyz="0" izz="1e-06"/>
+    </inertial>
+  </link>
+  <link name="camera_fisheye_right_optical_frame"/>
+  <joint name="camera_fisheye_right_optical_joint" type="fixed">
+    <parent link="camera_fisheye_right_link"/>
+    <child link="camera_fisheye_right_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <!-- Fisheye Rear -->
+  <joint name="camera_fisheye_rear_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_fisheye_rear_link"/>
+    <origin xyz="-0.5 0 1.845" rpy="3.1416 2.513274 0"/>
+  </joint>
+  <link name="camera_fisheye_rear_link">
+    <visual name="fisheye_rear">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><sphere radius="0.00346"/></geometry>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="1e-06" ixy="0" ixz="0" iyy="1e-06" iyz="0" izz="1e-06"/>
+    </inertial>
+  </link>
+  <link name="camera_fisheye_rear_optical_frame"/>
+  <joint name="camera_fisheye_rear_optical_joint" type="fixed">
+    <parent link="camera_fisheye_rear_link"/>
+    <child link="camera_fisheye_rear_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <!-- Gazebo macro for 4x Fisheye cameras -->
+  <xacro:macro name="fisheye_gazebo_plugin" params="link_name namespace optical_frame">
+    <gazebo reference="${link_name}">
+      <sensor name="${link_name}_sensor" type="wideanglecamera">
+        <pose>0 0 0 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>60</update_rate>
+        <camera>
+          <horizontal_fov>2.967</horizontal_fov>
+          <image><width>640</width><height>480</height><format>R8G8B8</format></image>
+          <clip><near>0.05</near><far>20.0</far></clip>
+          <lens>
+            <type>custom</type>
+            <custom_function>
+              <c1>1.05</c1><c2>4</c2><f>1.0</f><fun>tan</fun>
+            </custom_function>
+            <scale_to_hfov>true</scale_to_hfov>
+            <cutoff_angle>2.967</cutoff_angle>
+          </lens>
+        </camera>
+        <plugin name="${link_name}_controller" filename="libgazebo_ros_camera.so">
+          <ros><namespace>${namespace}</namespace></ros>
+          <frame_name>${optical_frame}</frame_name>
+          <image_topic_name>image_raw</image_topic_name>
+          <camera_info_topic_name>camera_info</camera_info_topic_name>
+          <always_on>true</always_on>
+          <update_rate>60</update_rate>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:fisheye_gazebo_plugin link_name="camera_fisheye_front_link"
+    namespace="/fisheye/front"
+    optical_frame="camera_fisheye_front_optical_frame"/>
+  <xacro:fisheye_gazebo_plugin link_name="camera_fisheye_left_link"
+    namespace="/fisheye/left"
+    optical_frame="camera_fisheye_left_optical_frame"/>
+  <xacro:fisheye_gazebo_plugin link_name="camera_fisheye_right_link"
+    namespace="/fisheye/right"
+    optical_frame="camera_fisheye_right_optical_frame"/>
+  <xacro:fisheye_gazebo_plugin link_name="camera_fisheye_rear_link"
+    namespace="/fisheye/rear"
+    optical_frame="camera_fisheye_rear_optical_frame"/>
+
+  <!-- ============================= -->
+  <!-- 4. Ultrasonic Sensors (5x on Base) -->
+  <!-- ============================= -->
+
+  <xacro:macro name="ultrasonic_link" params="name short_name xyz rpy">
+    <joint name="${name}_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}_link"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+    <link name="${name}_link">
+      <visual name="${name}_visual">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry><sphere radius="0.00346"/></geometry>
+      </visual>
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.01"/>
+        <inertia ixx="1e-06" ixy="0" ixz="0" iyy="1e-06" iyz="0" izz="1e-06"/>
+      </inertial>
+    </link>
+    <gazebo reference="${name}_link">
+      <sensor name="${name}" type="ray">
+        <always_on>true</always_on>
+        <visualize>true</visualize>
+        <update_rate>5</update_rate>
+        <ray>
+          <scan>
+            <horizontal><samples>5</samples><resolution>1</resolution>
+              <min_angle>-0.25</min_angle><max_angle>0.25</max_angle></horizontal>
+            <vertical><samples>5</samples><resolution>1</resolution>
+              <min_angle>-0.25</min_angle><max_angle>0.25</max_angle></vertical>
+          </scan>
+          <range><min>0.01</min><max>0.75</max><resolution>0.01</resolution></range>
+        </ray>
+        <plugin name="${name}_controller" filename="libgazebo_ros_ray_sensor.so">
+          <ros><namespace>/ultrasound/${short_name}</namespace></ros>
+          <frame_name>${name}_link</frame_name>
+          <output_type>sensor_msgs/Range</output_type>
+          <gaussianNoise>0.005</gaussianNoise>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:ultrasonic_link name="ultrasonic_front_left"  short_name="front_left"  xyz="0.08 -0.1293 0.2115"      rpy="0 0 0"/>
+  <xacro:ultrasonic_link name="ultrasonic_front_right" short_name="front_right" xyz="0.08 0.1337 0.21166"      rpy="0 0 0"/>
+  <xacro:ultrasonic_link name="ultrasonic_side_left"   short_name="left"        xyz="-0.34701 -0.215 0.21154"  rpy="0 0 -1.5708"/>
+  <xacro:ultrasonic_link name="ultrasonic_side_right"  short_name="right"       xyz="-0.34701 0.215 0.21154"   rpy="0 0 1.5708"/>
+  <xacro:ultrasonic_link name="ultrasonic_rear"        short_name="rear"        xyz="-0.562 0.01302 0.33103"   rpy="0 0 3.14159"/>
+
+</robot>

@@ -1,0 +1,330 @@
+<?xml version="1.0"?>
+<robot name="uvc1_virofighter" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- ============================================================ -->
+  <!--  MAIN ROBOT DESCRIPTION — uvc1_virofighter.xacro             -->
+  <!--  Robot: ViroFighter UVC1 (Differential drive + rear casters) -->
+  <!--  Includes: common_properties.xacro, sensors.xacro            -->
+  <!-- ============================================================ -->
+
+  <!-- Include shared material definitions -->
+  <xacro:include filename="$(find vf_robot_description)/urdf/xacro/common_properties.xacro"/>
+
+  <!-- Include all sensor definitions + Gazebo sensor plugins -->
+  <xacro:include filename="$(find vf_robot_description)/urdf/xacro/sensors.xacro"/>
+
+  <!-- ============================= -->
+  <!-- BASE FOOTPRINT -->
+  <!-- ============================= -->
+
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ============================= -->
+  <!-- BASE LINK -->
+  <!-- ============================= -->
+
+  <link name="base_link">
+    <visual name="base_visual">
+      <origin xyz="-0.25 0 0.049" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://vf_robot_description/meshes/bases/virofighter_base.dae" scale="1.0 1.0 1.0"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+
+    <collision name="base_collision">
+      <!-- Bounding-box collision approximates the full body -->
+      <origin xyz="-0.25 0 1" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://vf_robot_description/meshes/bases/Cube_019.dae" scale="1.0 1.0 1.0"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="10.011"/>
+      <inertia ixx="13.2077" ixy="0" ixz="0"
+               iyy="13.3744" iyz="0"
+               izz="0.34275"/>
+    </inertial>
+  </link>
+
+  <!-- ============================= -->
+  <!-- FRONT WHEELS (Differential drive) -->
+  <!-- ============================= -->
+
+  <!-- Front Left Wheel -->
+  <joint name="wheel_front_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_front_left_link"/>
+    <origin xyz="0 0.17827 0.082" rpy="0 0 0"/>
+    <axis xyz="0 1.0 0"/>
+    <dynamics damping="0.005" friction="0.005"/>
+  </joint>
+
+  <link name="wheel_front_left_link">
+    <visual name="wheel_front_left">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://vf_robot_description/meshes/wheels/wheel_front_left.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision name="wheel_front_left_collision">
+      <origin xyz="0 0.00277 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.08273" length="0.04836"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="7.90271"/>
+      <inertia ixx="0.01506" ixy="0" ixz="0"
+               iyy="0.01506" iyz="0"
+               izz="0.02704"/>
+    </inertial>
+  </link>
+
+  <!-- Front Right Wheel -->
+  <joint name="wheel_front_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wheel_front_right_link"/>
+    <origin xyz="0 -0.17827 0.082" rpy="0 0 0"/>
+    <axis xyz="0 1.0 0"/>
+    <dynamics damping="0.005" friction="0.005"/>
+  </joint>
+
+  <link name="wheel_front_right_link">
+    <visual name="wheel_front_right">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://vf_robot_description/meshes/wheels/wheel_front_right.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision name="front_right_wheel_collision">
+      <origin xyz="0 -0.00277 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.08274" length="0.04836"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="7.90462"/>
+      <inertia ixx="0.01507" ixy="0" ixz="0"
+               iyy="0.01507" iyz="0"
+               izz="0.02706"/>
+    </inertial>
+  </link>
+
+  <!-- ============================= -->
+  <!-- REAR CASTER WHEELS (wrist + wheel pairs) -->
+  <!-- ============================= -->
+
+  <!-- Rear Left Wrist (steering pivot) -->
+  <joint name="wrist_rear_left_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wrist_rear_left_link"/>
+    <origin xyz="-0.47 0.16211 0.13" rpy="0 0 0"/>
+    <axis xyz="0 0 1.0"/>
+    <dynamics damping="0.005" friction="0.005"/>
+  </joint>
+
+  <link name="wrist_rear_left_link">
+    <visual name="rear_left_wrist">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://vf_robot_description/meshes/wheels/wrist_rear_left.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="brown"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="2.0"/>
+      <inertia ixx="2e-05" ixy="0" ixz="0" iyy="2e-05" iyz="0" izz="2e-05"/>
+    </inertial>
+  </link>
+
+  <!-- Rear Left Wheel -->
+  <joint name="wheel_rear_left_joint" type="continuous">
+    <parent link="wrist_rear_left_link"/>
+    <child link="wheel_rear_left_link"/>
+    <origin xyz="0.03802 0 -0.08" rpy="0 0 0"/>
+    <axis xyz="0 1.0 0"/>
+    <dynamics damping="0.005" friction="0.005"/>
+  </joint>
+
+  <link name="wheel_rear_left_link">
+    <visual name="wheel_rear_left">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://vf_robot_description/meshes/wheels/wheel_rear_left.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision name="rear_left_wheel_collision">
+      <origin xyz="-3e-05 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.05072" length="0.03598"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="2.20995"/>
+      <inertia ixx="0.00166" ixy="0" ixz="0"
+               iyy="0.00166" iyz="0"
+               izz="0.00284"/>
+    </inertial>
+  </link>
+
+  <!-- Rear Right Wrist (steering pivot) -->
+  <joint name="wrist_rear_right_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="wrist_rear_right_link"/>
+    <origin xyz="-0.47 -0.16211 0.13" rpy="0 0 0"/>
+    <axis xyz="0 0 1.0"/>
+    <dynamics damping="0.005" friction="0.005"/>
+  </joint>
+
+  <link name="wrist_rear_right_link">
+    <visual name="rear_right_wrist">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://vf_robot_description/meshes/wheels/wrist_rear_right.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="brown"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="2.0"/>
+      <inertia ixx="2e-05" ixy="0" ixz="0" iyy="2e-05" iyz="0" izz="2e-05"/>
+    </inertial>
+  </link>
+
+  <!-- Rear Right Wheel -->
+  <joint name="wheel_rear_right_joint" type="continuous">
+    <parent link="wrist_rear_right_link"/>
+    <child link="wheel_rear_right_link"/>
+    <origin xyz="0.03802 0 -0.08" rpy="0 0 0"/>
+    <axis xyz="0 1.0 0"/>
+    <dynamics damping="0.005" friction="0.005"/>
+  </joint>
+
+  <link name="wheel_rear_right_link">
+    <visual name="wheel_rear_right">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://vf_robot_description/meshes/wheels/wheel_rear_right.dae" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+    <collision name="rear_right_wheel_collision">
+      <origin xyz="-3e-05 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <cylinder radius="0.05072" length="0.03598"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="2.20995"/>
+      <inertia ixx="0.00166" ixy="0" ixz="0"
+               iyy="0.00166" iyz="0"
+               izz="0.00284"/>
+    </inertial>
+  </link>
+
+  <!-- ============================= -->
+  <!-- UVC LIGHTS (6x vertical tubes on mast) -->
+  <!-- ============================= -->
+
+  <joint name="uvc_lights_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="uvc_lights_link"/>
+    <origin xyz="-0.3361 0 0.52606" rpy="0 0 0"/>
+  </joint>
+
+  <link name="uvc_lights_link">
+    <visual name="light_1">
+      <origin xyz="-0.10432 -0.07221 0.64035" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.01004" length="1.32715"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <visual name="light_2">
+      <origin xyz="-0.10432 0.07284 0.64035" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.01004" length="1.32715"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <visual name="light_3">
+      <origin xyz="0.0941 0.1377 0.64035" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.01004" length="1.32715"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <visual name="light_4">
+      <origin xyz="-0.02265 0.1377 0.64035" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.01004" length="1.32715"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <visual name="light_5">
+      <origin xyz="0.0941 -0.14053 0.64035" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.01004" length="1.32715"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <visual name="light_6">
+      <origin xyz="-0.02265 -0.14053 0.64035" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.01004" length="1.32715"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.9"/>
+      <inertia ixx="1.44e-04" ixy="0" ixz="0"
+               iyy="1.44e-04" iyz="0"
+               izz="7.2e-04"/>
+    </inertial>
+  </link>
+
+  <!-- ============================= -->
+  <!-- GAZEBO: DIFFERENTIAL DRIVE PLUGIN -->
+  <!-- ============================= -->
+
+  <gazebo>
+    <plugin name="uvc1_diff_drive" filename="libgazebo_ros_diff_drive.so">
+      <ros>
+        <namespace>/</namespace>
+      </ros>
+      <!-- NOTE: left/right intentionally swapped to match original robot geometry -->
+      <left_joint>wheel_front_left_joint</left_joint>
+      <right_joint>wheel_front_right_joint</right_joint>
+      <wheel_separation>0.356</wheel_separation>
+      <wheel_diameter>0.165</wheel_diameter>
+      <max_wheel_torque>20</max_wheel_torque>
+      <update_rate>100</update_rate>
+      <command_topic>cmd_vel</command_topic>
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <odometry_topic>odom</odometry_topic>
+      <robot_base_frame>base_footprint</robot_base_frame>
+    </plugin>
+
+    <!-- GAZEBO: JOINT STATE PUBLISHER PLUGIN -->
+    <plugin name="uvc1_joint_state" filename="libgazebo_ros_joint_state_publisher.so">
+      <ros>
+        <remapping>~/out:=joint_states</remapping>
+      </ros>
+      <update_rate>30</update_rate>
+      <joint_name>wheel_front_left_joint</joint_name>
+      <joint_name>wheel_front_right_joint</joint_name>
+      <joint_name>wrist_rear_left_joint</joint_name>
+      <joint_name>wheel_rear_left_joint</joint_name>
+      <joint_name>wrist_rear_right_joint</joint_name>
+      <joint_name>wheel_rear_right_joint</joint_name>
+    </plugin>
+  </gazebo>
+
+</robot>
