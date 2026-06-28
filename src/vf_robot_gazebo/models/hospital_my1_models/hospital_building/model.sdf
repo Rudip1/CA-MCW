@@ -1,0 +1,365 @@
+<?xml version="1.0"?>
+<!-- 
+  Hospital Floor Plan - Gazebo 11 SDF
+  =====================================
+  Layout based on provided floor plan image.
+  Scale: approx 1 unit = 1 meter
+  Building origin at center floor level (z=0)
+
+  Zones (from floor plan, top=north):
+    NORTH BLOCK  (y=8..18): Clean Core, OR1-3, Endoscopy, Equipment Storage
+    MID BLOCK    (y=0..8): Peripheral corridor, Locker rooms, Pre-op, PACU
+    SOUTH BLOCK  (y=-10..0): Conference, Waiting, Reception, Admin, Recovery
+  
+  Room approximate coordinates (center x, center y):
+    OR1:  (-12, 13), OR2: (-5, 13), OR3: (3, 13), Endoscopy: (10, 13)
+    Anesthesia Workroom: (-17, 16.5)
+    Decontam: (-11, 16.5), Prep/Pack: (-5, 16.5), Sterile Storage: (5, 16.5)
+    Gas Storage: (13, 16.5), Mechanical: (18, 16.5)
+    Male Locker: (-14, 5), Female Locker: (-8, 5)
+    Pre-op Holding: (2, 5), PACU: (12, 5)
+    Conference Room: (-15, -3), Bulk Storage: (-8, -2)
+    Admitting: (-4, -7), Waiting: (4, -7)
+    Reception: (-3, -12), Business Office: (-6, -15)
+    Records: (-14, -12), Dir of Nurses: (-14, -16)
+    Secondary Recovery: (13, -12), Stretcher Storage: (18, -12)
+    Primary Recovery: (17, 3), Pediatric/Isolation: (13, 3)
+-->
+<sdf version="1.6">
+  <model name="hospital_building">
+    <static>true</static>
+
+    <!-- ================================================================
+         FLOOR (full building footprint, slightly larger than walls)
+         ================================================================ -->
+    <link name="floor">
+      <pose>1.5 0 -0.05 0 0 0</pose>
+      <collision name="c"><geometry><box><size>44 38 0.1</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>44 38 0.1</size></box></geometry>
+        <material>
+          <ambient>0.88 0.88 0.88 1</ambient>
+          <diffuse>0.88 0.88 0.88 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- ================================================================
+         OUTER PERIMETER WALLS  (thickness=0.2, height=3.0)
+         ================================================================ -->
+    <!-- North wall -->
+    <link name="wall_north">
+      <pose>1.5 19.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>44 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>44 0.2 3.0</size></box></geometry>
+        <material><ambient>0.82 0.82 0.82 1</ambient><diffuse>0.82 0.82 0.82 1</diffuse></material></visual>
+    </link>
+    <!-- South wall -->
+    <link name="wall_south">
+      <pose>1.5 -19.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>44 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>44 0.2 3.0</size></box></geometry>
+        <material><ambient>0.82 0.82 0.82 1</ambient><diffuse>0.82 0.82 0.82 1</diffuse></material></visual>
+    </link>
+    <!-- East wall -->
+    <link name="wall_east">
+      <pose>23.5 0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 38 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 38 3.0</size></box></geometry>
+        <material><ambient>0.82 0.82 0.82 1</ambient><diffuse>0.82 0.82 0.82 1</diffuse></material></visual>
+    </link>
+    <!-- West wall -->
+    <link name="wall_west">
+      <pose>-20.5 0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 38 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 38 3.0</size></box></geometry>
+        <material><ambient>0.82 0.82 0.82 1</ambient><diffuse>0.82 0.82 0.82 1</diffuse></material></visual>
+    </link>
+
+    <!-- ================================================================
+         CLEAN CORE / OR ZONE  (north block dividing wall at y=9)
+         North block: y = 9 to 19
+         ================================================================ -->
+    <!-- Clean core south wall (corridor between OR zone and mid zone) -->
+    <link name="wall_clean_core_south">
+      <pose>3.5 9.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>44 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>44 0.2 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+
+    <!-- Internal wall separating prep/clean core from OR corridor (y=14.5) -->
+    <link name="wall_clean_core_internal">
+      <pose>3.5 14.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>44 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>44 0.2 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+
+    <!-- Vertical partitions between OR rooms (x-separators in OR zone) -->
+    <!-- Between OR1 and OR2 -->
+    <link name="or_sep_1_2">
+      <pose>-8.0 11.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 5.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 5.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+    <!-- Between OR2 and OR3 -->
+    <link name="or_sep_2_3">
+      <pose>-1.5 11.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 5.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 5.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+    <!-- Between OR3 and Endoscopy -->
+    <link name="or_sep_3_endo">
+      <pose>6.5 11.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 5.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 5.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+    <!-- Equipment storage east separator -->
+    <link name="or_equip_sep">
+      <pose>14.5 11.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 5.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 5.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+
+    <!-- Clean core north block internal separators (prep/pack, sterilize, storage) -->
+    <link name="clean_sep1"><pose>-13.5 16.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 4.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 4.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+    <link name="clean_sep2"><pose>-7.5 16.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 4.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 4.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+    <link name="clean_sep3"><pose>-1.0 16.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 4.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 4.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+    <link name="clean_sep4"><pose>6.5 16.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 4.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 4.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+    <link name="clean_sep5"><pose>11.5 16.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 4.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 4.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+    <link name="clean_sep6"><pose>16.5 16.75 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 4.5 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 4.5 3.0</size></box></geometry>
+        <material><ambient>0.78 0.80 0.85 1</ambient><diffuse>0.78 0.80 0.85 1</diffuse></material></visual>
+    </link>
+
+    <!-- ================================================================
+         MID ZONE WALLS  (y=0..9)
+         Locker rooms, Pre-op Holding, PACU
+         ================================================================ -->
+    <!-- Mid zone south wall (between mid and admin/waiting) -->
+    <link name="wall_mid_south">
+      <pose>3.5 0.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>44 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>44 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+    <!-- Locker/toilet separators west portion (x=-20.5 to x=-5) -->
+    <link name="lock_sep1"><pose>-19.0 4.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 9.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 9.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="lock_sep2"><pose>-13.0 4.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 9.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 9.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="lock_sep3"><pose>-7.0 4.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 9.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 9.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <!-- Mid-zone horizontal separator (toilet row) -->
+    <link name="lock_horiz"><pose>-13.5 6.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>13.2 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>13.2 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+    <!-- Pre-op Holding box (center approx x=2, y=5, size 8x6) -->
+    <link name="preop_north"><pose>2.0 8.1 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>8.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>8.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+    <link name="preop_west"><pose>-2.0 5.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 6.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 6.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+    <link name="preop_east"><pose>6.0 5.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 6.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 6.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+
+    <!-- PACU zone east walls -->
+    <link name="pacu_west"><pose>6.5 4.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 9.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 9.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+    <!-- Primary recovery east partition -->
+    <link name="primary_rec_sep"><pose>14.5 4.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 9.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 9.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+    <!-- Pediatric/isolation separator -->
+    <link name="pedi_sep"><pose>10.5 2.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 4.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 4.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+    <link name="pedi_horiz"><pose>12.5 0.1 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>4.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>4.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+
+    <!-- ================================================================
+         SOUTH / ADMIN ZONE  (y=-19..0)
+         Waiting, Reception, Admin, Recovery, Business
+         ================================================================ -->
+    <!-- Conference room box -->
+    <link name="conf_north"><pose>-14.0 -1.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>7.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>7.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="conf_east"><pose>-10.5 -3.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 5.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 5.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="conf_south"><pose>-14.5 -6.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>8.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>8.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+    <!-- Bulk storage partition -->
+    <link name="bulk_sep"><pose>-5.0 -2.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 4.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 4.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="bulk_south"><pose>-7.5 -4.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>5.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>5.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+    <!-- Dressing rooms partition -->
+    <link name="dress_north"><pose>-2.5 -4.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>5.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>5.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="dress_east"><pose>0.0 -5.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 3.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 3.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="dress_south"><pose>-2.5 -7.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>5.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>5.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+    <!-- Admitting / Waiting divider -->
+    <link name="admit_waiting_sep"><pose>0.0 -7.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 6.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 6.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+    <!-- Waiting room north wall -->
+    <link name="waiting_north"><pose>7.0 -4.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>14.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>14.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+    <!-- Nurse station / med prep area partition -->
+    <link name="nursestat_sep"><pose>7.5 -1.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 5.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 5.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+    <link name="medprep_sep"><pose>11.5 -1.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 5.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 5.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+
+    <!-- Recovery south block -->
+    <link name="sec_rec_north"><pose>14.5 -8.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>9.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>9.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+    <link name="sec_rec_west"><pose>10.0 -12.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 9.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 9.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.82 0.88 1</ambient><diffuse>0.80 0.82 0.88 1</diffuse></material></visual>
+    </link>
+    <link name="stretcher_sep"><pose>17.0 -12.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 9.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 9.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+    <!-- Reception / records / admin south block walls -->
+    <link name="admin_north"><pose>-7.0 -10.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>10.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>10.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="admin_sep1"><pose>-11.0 -13.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 6.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 6.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="admin_sep2"><pose>-3.0 -13.0 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 6.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 6.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="admin_horiz"><pose>-7.0 -13.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>8.0 0.2 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>8.0 0.2 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+    <link name="dir_nurses_sep"><pose>-11.0 -16.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 5.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 5.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+    <!-- Staff entrance corridor wall -->
+    <link name="staff_ent_wall"><pose>-20.5 -3.5 1.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.2 7.0 3.0</size></box></geometry></collision>
+      <visual name="v"><geometry><box><size>0.2 7.0 3.0</size></box></geometry>
+        <material><ambient>0.80 0.80 0.80 1</ambient><diffuse>0.80 0.80 0.80 1</diffuse></material></visual>
+    </link>
+
+  </model>
+</sdf>

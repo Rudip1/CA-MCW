@@ -1,0 +1,1029 @@
+<?xml version="1.0"?>
+<!--
+  hospital.world — Gazebo 11 hospital simulation
+  ================================================
+  Building origin: (0,0,0) at center of floor plan
+  Room coordinates match hospital_building model.sdf
+
+  ROOM CENTERS (approximate, for equipment placement):
+    OR-1:        x=-14, y=11.7
+    OR-2:        x=-4.7,y=11.7
+    OR-3:        x= 2.3,y=11.7
+    Endoscopy:   x= 10.5,y=11.7
+    Equipment Storage: x=18.5,y=11.7
+    Anesthesia WR: x=-17.5,y=16.7
+    Decontam:    x=-10.5,y=16.7
+    Prep/Pack:   x=-4.3, y=16.7
+    Sterile Stor:x= 3.7, y=16.7
+    Gas Storage: x= 9.0, y=16.7
+    Mechanical:  x=14.0, y=16.7
+    ─ Mid zone ─
+    Male Locker: x=-16.0,y=4.0
+    Female Locker:x=-10.0,y=4.0
+    Pre-op Hold: x= 2.0, y=5.0
+    PACU:        x= 10.5,y=5.0
+    Primary Rec: x= 17.0,y=3.0
+    Pediatric:   x= 12.5,y=2.0
+    ─ South zone ─
+    Conference:  x=-14.5,y=-3.5
+    Bulk Storage:x=-7.5, y=-2.5
+    Dressing Rm: x=-2.0, y=-5.5
+    Admitting:   x=-6.5, y=-6.0
+    Waiting:     x= 5.0, y=-8.0
+    Nurse Station:x=9.5, y=-2.0
+    Med Prep:    x=13.5, y=-2.0
+    Sec Recovery:x=13.5, y=-13.0
+    Stretcher St:x=20.0, y=-13.0
+    Reception:   x=-1.0, y=-12.0
+    Records:     x=-14.0,y=-12.0
+    Business Off:x=-6.5, y=-15.5
+    Dir Nurses:  x=-14.5,y=-16.5
+    Office:      x=-17.5,y=-9.0
+-->
+<sdf version="1.6">
+  <world name="hospital">
+
+    <!-- ============================================================
+         PHYSICS & ENVIRONMENT
+         ============================================================ -->
+    <physics type="ode">
+      <real_time_update_rate>1000</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+
+    <gravity>0 0 -9.8</gravity>
+
+    <!-- Ambient light - hospital fluorescent feel -->
+    <scene>
+      <ambient>0.6 0.6 0.65 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <!-- Sun light -->
+    <light name="sun" type="directional">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 100 0 0 0</pose>
+      <diffuse>0.7 0.7 0.7 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>0.1 0.1 -0.9</direction>
+    </light>
+
+    <!-- Overhead fluorescent lights per zone -->
+    <light name="light_or_zone" type="point">
+      <pose>-4.5 11.7 2.9 0 0 0</pose>
+      <diffuse>0.9 0.9 0.95 1</diffuse><specular>0.3 0.3 0.3 1</specular>
+      <attenuation><range>20</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.001</quadratic></attenuation>
+    </light>
+    <light name="light_mid_zone" type="point">
+      <pose>2.0 5.0 2.9 0 0 0</pose>
+      <diffuse>0.85 0.85 0.9 1</diffuse><specular>0.2 0.2 0.2 1</specular>
+      <attenuation><range>22</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.001</quadratic></attenuation>
+    </light>
+    <light name="light_waiting" type="point">
+      <pose>5.0 -8.0 2.9 0 0 0</pose>
+      <diffuse>0.8 0.8 0.85 1</diffuse><specular>0.2 0.2 0.2 1</specular>
+      <attenuation><range>20</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.001</quadratic></attenuation>
+    </light>
+    <light name="light_admin" type="point">
+      <pose>-7.0 -13.0 2.9 0 0 0</pose>
+      <diffuse>0.8 0.8 0.85 1</diffuse><specular>0.2 0.2 0.2 1</specular>
+      <attenuation><range>18</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.001</quadratic></attenuation>
+    </light>
+    <light name="light_recovery" type="point">
+      <pose>14.0 -10.0 2.9 0 0 0</pose>
+      <diffuse>0.8 0.8 0.85 1</diffuse><specular>0.2 0.2 0.2 1</specular>
+      <attenuation><range>14</range><constant>0.4</constant><linear>0.05</linear><quadratic>0.001</quadratic></attenuation>
+    </light>
+
+    <!-- ============================================================
+         GROUND PLANE (outside building)
+         ============================================================ -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material><ambient>0.4 0.5 0.4 1</ambient><diffuse>0.4 0.5 0.4 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================
+         HOSPITAL BUILDING STRUCTURE
+         ============================================================ -->
+    <include>
+      <uri>model://hospital_building</uri>
+      <name>hospital_building</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         OPERATING ROOM 1  (x=-14, y=11.7)
+         Equipment: OR table, anesthesia machine, surgical light,
+                    instrument table, patient monitor, supply cart
+         ============================================================ -->
+    <include>
+      <uri>model://operating_table</uri>
+      <name>or1_table</name>
+      <pose>-14.0 11.7 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://anesthesia_machine</uri>
+      <name>or1_anesthesia</name>
+      <pose>-11.5 13.0 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://surgical_light</uri>
+      <name>or1_light</name>
+      <pose>-14.0 11.7 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://instrument_table</uri>
+      <name>or1_instruments</name>
+      <pose>-12.5 10.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>or1_monitor</name>
+      <pose>-16.0 12.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>or1_supply</name>
+      <pose>-15.5 10.3 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>or1_iv</name>
+      <pose>-12.0 12.8 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         OPERATING ROOM 2  (x=-4.7, y=11.7)
+         ============================================================ -->
+    <include>
+      <uri>model://operating_table</uri>
+      <name>or2_table</name>
+      <pose>-4.7 11.7 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://anesthesia_machine</uri>
+      <name>or2_anesthesia</name>
+      <pose>-2.2 13.0 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://surgical_light</uri>
+      <name>or2_light</name>
+      <pose>-4.7 11.7 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://instrument_table</uri>
+      <name>or2_instruments</name>
+      <pose>-3.2 10.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>or2_monitor</name>
+      <pose>-6.7 12.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>or2_supply</name>
+      <pose>-6.2 10.3 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>or2_iv</name>
+      <pose>-2.7 12.8 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         OPERATING ROOM 3  (x=2.3, y=11.7)
+         ============================================================ -->
+    <include>
+      <uri>model://operating_table</uri>
+      <name>or3_table</name>
+      <pose>2.3 11.7 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://anesthesia_machine</uri>
+      <name>or3_anesthesia</name>
+      <pose>4.8 13.0 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://surgical_light</uri>
+      <name>or3_light</name>
+      <pose>2.3 11.7 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://instrument_table</uri>
+      <name>or3_instruments</name>
+      <pose>3.8 10.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>or3_monitor</name>
+      <pose>0.3 12.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>or3_supply</name>
+      <pose>0.8 10.3 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>or3_iv</name>
+      <pose>4.3 12.8 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         ENDOSCOPY PROCEDURE ROOM  (x=10.5, y=11.7)
+         Equipment: endoscopy cart, procedure table, monitor, supply cart
+         ============================================================ -->
+    <include>
+      <uri>model://endoscopy_cart</uri>
+      <name>endo_cart</name>
+      <pose>12.5 12.8 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://operating_table</uri>
+      <name>endo_table</name>
+      <pose>10.0 11.2 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>endo_monitor</name>
+      <pose>8.5 12.8 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>endo_supply</name>
+      <pose>13.0 10.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>endo_iv</name>
+      <pose>8.8 10.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         EQUIPMENT STORAGE ROOM  (x=18.5, y=11.7)
+         Equipment: stretchers, supply carts
+         ============================================================ -->
+    <include>
+      <uri>model://stretcher</uri>
+      <name>equip_stretcher1</name>
+      <pose>17.5 12.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://stretcher</uri>
+      <name>equip_stretcher2</name>
+      <pose>17.5 10.8 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>equip_supply1</name>
+      <pose>20.5 12.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>equip_supply2</name>
+      <pose>20.5 11.0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         ANESTHESIA WORKROOM  (x=-17.5, y=16.7)
+         Equipment: anesthesia machines, supply cart, medicine cabinet
+         ============================================================ -->
+    <include>
+      <uri>model://anesthesia_machine</uri>
+      <name>anesth_wr_machine1</name>
+      <pose>-17.5 16.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://anesthesia_machine</uri>
+      <name>anesth_wr_machine2</name>
+      <pose>-15.5 16.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://med_cabinet</uri>
+      <name>anesth_med_cab</name>
+      <pose>-18.5 18.2 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>anesth_supply</name>
+      <pose>-14.8 17.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         DECONTAMINATION ROOM  (x=-10.5, y=16.7)
+         Equipment: decon sinks (×2), supply cart
+         ============================================================ -->
+    <include>
+      <uri>model://decon_sink</uri>
+      <name>decon_sink1</name>
+      <pose>-11.5 18.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://decon_sink</uri>
+      <name>decon_sink2</name>
+      <pose>-9.5 18.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>decon_supply</name>
+      <pose>-10.5 15.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         STERILE STORAGE  (x=3.7, y=16.7)
+         Equipment: medicine cabinets, supply carts
+         ============================================================ -->
+    <include>
+      <uri>model://med_cabinet</uri>
+      <name>sterile_cab1</name>
+      <pose>2.5 18.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://med_cabinet</uri>
+      <name>sterile_cab2</name>
+      <pose>4.5 18.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>sterile_supply1</name>
+      <pose>3.0 15.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>sterile_supply2</name>
+      <pose>5.0 15.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         MALE LOCKER ROOM  (x=-16, y=4.0)
+         Equipment: lockers (×6)
+         ============================================================ -->
+    <include>
+      <uri>model://locker</uri>
+      <name>male_lock1</name>
+      <pose>-18.5 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>male_lock2</name>
+      <pose>-18.1 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>male_lock3</name>
+      <pose>-17.7 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>male_lock4</name>
+      <pose>-17.3 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>male_lock5</name>
+      <pose>-16.9 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>male_lock6</name>
+      <pose>-16.5 4.0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         FEMALE LOCKER ROOM  (x=-10, y=4.0)
+         ============================================================ -->
+    <include>
+      <uri>model://locker</uri>
+      <name>fem_lock1</name>
+      <pose>-12.5 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>fem_lock2</name>
+      <pose>-12.1 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>fem_lock3</name>
+      <pose>-11.7 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>fem_lock4</name>
+      <pose>-11.3 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>fem_lock5</name>
+      <pose>-10.9 4.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>fem_lock6</name>
+      <pose>-10.5 4.0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         PRE-OPERATIVE HOLDING  (x=2, y=5)
+         Equipment: hospital beds (×4), IV stands, monitors
+         ============================================================ -->
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>preop_bed1</name>
+      <pose>0.5 6.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>preop_bed2</name>
+      <pose>2.5 6.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>preop_bed3</name>
+      <pose>0.5 3.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>preop_bed4</name>
+      <pose>2.5 3.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>preop_iv1</name>
+      <pose>1.5 7.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>preop_iv2</name>
+      <pose>3.5 7.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>preop_mon1</name>
+      <pose>1.5 5.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         POST-ANESTHESIA CARE UNIT (PACU)  (x=10.5, y=5)
+         Equipment: hospital beds (×4), monitors, IV stands, supply cart
+         ============================================================ -->
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pacu_bed1</name>
+      <pose>7.5 7.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pacu_bed2</name>
+      <pose>9.5 7.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pacu_bed3</name>
+      <pose>7.5 3.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pacu_bed4</name>
+      <pose>9.5 3.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>pacu_mon1</name>
+      <pose>7.5 6.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>pacu_mon2</name>
+      <pose>9.5 6.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>pacu_mon3</name>
+      <pose>7.5 4.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>pacu_iv1</name>
+      <pose>8.0 8.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>pacu_iv2</name>
+      <pose>10.0 8.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>pacu_supply</name>
+      <pose>7.0 2.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://nurse_station</uri>
+      <name>pacu_nurse_station</name>
+      <pose>8.8 1.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         PEDIATRIC / ISOLATION RECOVERY  (x=12.5, y=2.0)
+         ============================================================ -->
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pedi_bed1</name>
+      <pose>12.0 2.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pedi_bed2</name>
+      <pose>13.5 2.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>pedi_mon1</name>
+      <pose>12.0 1.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>pedi_iv1</name>
+      <pose>13.5 1.0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         PRIMARY RECOVERY  (x=17, y=3)
+         ============================================================ -->
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pri_rec_bed1</name>
+      <pose>16.5 5.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pri_rec_bed2</name>
+      <pose>18.5 5.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pri_rec_bed3</name>
+      <pose>16.5 3.0 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>pri_rec_bed4</name>
+      <pose>18.5 3.0 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>pri_rec_mon1</name>
+      <pose>16.5 6.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>pri_rec_mon2</name>
+      <pose>18.5 6.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>pri_rec_iv1</name>
+      <pose>17.2 4.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>pri_rec_supply</name>
+      <pose>20.0 4.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         CONFERENCE ROOM  (x=-14.5, y=-3.5)
+         Equipment: conference table + chairs (×8)
+         ============================================================ -->
+    <include>
+      <uri>model://conference_table</uri>
+      <name>conf_table</name>
+      <pose>-14.5 -3.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>conf_chair1</name>
+      <pose>-16.5 -3.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>conf_chair2</name>
+      <pose>-15.5 -2.5 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>conf_chair3</name>
+      <pose>-14.5 -2.5 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>conf_chair4</name>
+      <pose>-13.5 -2.5 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>conf_chair5</name>
+      <pose>-12.5 -3.5 0 0 0 -1.5708</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>conf_chair6</name>
+      <pose>-15.5 -4.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>conf_chair7</name>
+      <pose>-14.5 -4.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>conf_chair8</name>
+      <pose>-13.5 -4.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         BULK STORAGE  (x=-7.5, y=-2.5)
+         Equipment: supply carts (×4)
+         ============================================================ -->
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>bulk_cart1</name>
+      <pose>-8.5 -2.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>bulk_cart2</name>
+      <pose>-7.5 -2.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>bulk_cart3</name>
+      <pose>-6.5 -2.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>bulk_cart4</name>
+      <pose>-8.5 -3.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         DRESSING ROOMS  (x=-2.0, y=-5.5)
+         Equipment: lockers ×4, supply cart
+         ============================================================ -->
+    <include>
+      <uri>model://locker</uri>
+      <name>dress_lock1</name>
+      <pose>-3.0 -5.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>dress_lock2</name>
+      <pose>-2.6 -5.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>dress_lock3</name>
+      <pose>-3.0 -6.0 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://locker</uri>
+      <name>dress_lock4</name>
+      <pose>-2.6 -6.0 0 0 0 3.14159</pose>
+    </include>
+
+    <!-- ============================================================
+         ADMITTING  (x=-6.5, y=-6.0)
+         Equipment: reception desk, office desks, chairs
+         ============================================================ -->
+    <include>
+      <uri>model://reception_desk</uri>
+      <name>admitting_desk</name>
+      <pose>-6.5 -6.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://office_desk</uri>
+      <name>admitting_offdesk1</name>
+      <pose>-8.5 -5.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>admitting_chair1</name>
+      <pose>-5.5 -5.0 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>admitting_chair2</name>
+      <pose>-4.5 -5.0 0 0 0 3.14159</pose>
+    </include>
+
+    <!-- ============================================================
+         WAITING ROOM  (x=5.0, y=-8.0)
+         Equipment: waiting chairs (×12), wheelchair
+         ============================================================ -->
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair1</name>
+      <pose>1.5 -5.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair2</name>
+      <pose>2.5 -5.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair3</name>
+      <pose>3.5 -5.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair4</name>
+      <pose>4.5 -5.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair5</name>
+      <pose>5.5 -5.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair6</name>
+      <pose>1.5 -7.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair7</name>
+      <pose>2.5 -7.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair8</name>
+      <pose>3.5 -7.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair9</name>
+      <pose>4.5 -7.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair10</name>
+      <pose>5.5 -7.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair11</name>
+      <pose>6.5 -7.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>wait_chair12</name>
+      <pose>7.5 -7.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://wheelchair</uri>
+      <name>waiting_wheelchair1</name>
+      <pose>8.5 -6.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://wheelchair</uri>
+      <name>waiting_wheelchair2</name>
+      <pose>8.5 -8.0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         NURSE STATION  (x=9.5, y=-2.0)
+         ============================================================ -->
+    <include>
+      <uri>model://nurse_station</uri>
+      <name>main_nurse_station</name>
+      <pose>9.5 -2.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://med_cabinet</uri>
+      <name>nurse_med_cab</name>
+      <pose>9.0 -0.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>nurse_supply</name>
+      <pose>11.0 -1.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         MED PREP  (x=13.5, y=-2.0)
+         ============================================================ -->
+    <include>
+      <uri>model://med_cabinet</uri>
+      <name>medprep_cab1</name>
+      <pose>12.5 -0.8 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://med_cabinet</uri>
+      <name>medprep_cab2</name>
+      <pose>14.5 -0.8 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>medprep_supply</name>
+      <pose>13.5 -3.0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         SECONDARY RECOVERY  (x=13.5, y=-13.0)
+         Equipment: hospital beds (×3), monitors, IV stands
+         ============================================================ -->
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>sec_rec_bed1</name>
+      <pose>11.5 -10.0 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>sec_rec_bed2</name>
+      <pose>13.5 -10.0 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>sec_rec_bed3</name>
+      <pose>11.5 -13.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://hospital_bed</uri>
+      <name>sec_rec_bed4</name>
+      <pose>13.5 -13.5 0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>sec_rec_mon1</name>
+      <pose>11.5 -9.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://patient_monitor</uri>
+      <name>sec_rec_mon2</name>
+      <pose>13.5 -9.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://iv_stand</uri>
+      <name>sec_rec_iv1</name>
+      <pose>12.5 -11.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>sec_rec_supply</name>
+      <pose>15.5 -12.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://wheelchair</uri>
+      <name>sec_rec_wheelchair</name>
+      <pose>15.5 -14.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         STRETCHER STORAGE  (x=20, y=-13.0)
+         ============================================================ -->
+    <include>
+      <uri>model://stretcher</uri>
+      <name>stretch_storage1</name>
+      <pose>18.5 -11.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://stretcher</uri>
+      <name>stretch_storage2</name>
+      <pose>18.5 -13.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://stretcher</uri>
+      <name>stretch_storage3</name>
+      <pose>18.5 -15.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://wheelchair</uri>
+      <name>stretch_wheelchair</name>
+      <pose>21.0 -12.0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         RECEPTION  (x=-1.0, y=-12.0)
+         Equipment: reception desk, chairs
+         ============================================================ -->
+    <include>
+      <uri>model://reception_desk</uri>
+      <name>reception_desk_main</name>
+      <pose>-1.0 -12.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>recep_chair1</name>
+      <pose>0.0 -10.5 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>recep_chair2</name>
+      <pose>-2.0 -10.5 0 0 0 3.14159</pose>
+    </include>
+    <include>
+      <uri>model://wheelchair</uri>
+      <name>recep_wheelchair</name>
+      <pose>-3.5 -11.0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         RECORDS ROOM  (x=-14.0, y=-12.0)
+         Equipment: office desks ×2, chairs, supply cabinets
+         ============================================================ -->
+    <include>
+      <uri>model://office_desk</uri>
+      <name>records_desk1</name>
+      <pose>-13.0 -11.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://office_desk</uri>
+      <name>records_desk2</name>
+      <pose>-15.5 -11.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://supply_cart</uri>
+      <name>records_cart</name>
+      <pose>-14.5 -13.5 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         BUSINESS OFFICE  (x=-6.5, y=-15.5)
+         Equipment: desks ×3, chairs
+         ============================================================ -->
+    <include>
+      <uri>model://office_desk</uri>
+      <name>biz_desk1</name>
+      <pose>-8.0 -15.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://office_desk</uri>
+      <name>biz_desk2</name>
+      <pose>-6.0 -15.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://office_desk</uri>
+      <name>biz_desk3</name>
+      <pose>-4.5 -15.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>biz_chair1</name>
+      <pose>-8.0 -17.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>biz_chair2</name>
+      <pose>-6.0 -17.0 0 0 0 0</pose>
+    </include>
+
+    <!-- ============================================================
+         DIRECTOR OF NURSES OFFICE  (x=-14.5, y=-16.5)
+         Equipment: desk, chairs
+         ============================================================ -->
+    <include>
+      <uri>model://office_desk</uri>
+      <name>dir_nurses_desk</name>
+      <pose>-14.5 -16.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>dir_chair1</name>
+      <pose>-13.0 -16.5 0 0 0 -1.5708</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>dir_chair2</name>
+      <pose>-12.5 -16.5 0 0 0 -1.5708</pose>
+    </include>
+
+    <!-- ============================================================
+         OFFICE / STAFF AREA  (x=-17.5, y=-9.0)
+         Equipment: desk, chairs
+         ============================================================ -->
+    <include>
+      <uri>model://office_desk</uri>
+      <name>staff_office_desk</name>
+      <pose>-17.5 -9.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://waiting_chair</uri>
+      <name>staff_chair1</name>
+      <pose>-17.5 -11.0 0 0 0 0</pose>
+    </include>
+
+  </world>
+</sdf>

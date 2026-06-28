@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="locker">
+    <static>true</static>
+    <link name="body">
+      <pose>0 0 0.9 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.35 0.5 1.8</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.35 0.5 1.8</size></box></geometry>
+        <material><ambient>0.55 0.65 0.75 1</ambient><diffuse>0.55 0.65 0.75 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Door gap line -->
+    <link name="door_detail">
+      <pose>0 -0.251 0.9 0 0 0</pose>
+      <visual name="v">
+        <geometry><box><size>0.33 0.002 1.76</size></box></geometry>
+        <material><ambient>0.3 0.3 0.3 1</ambient><diffuse>0.3 0.3 0.3 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Handle -->
+    <link name="handle">
+      <pose>0.1 -0.26 0.88 0 0 0</pose>
+      <visual name="v"><geometry><sphere><radius>0.02</radius></sphere></geometry></visual>
+    </link>
+  </model>
+</sdf>

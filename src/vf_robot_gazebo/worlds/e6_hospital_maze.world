@@ -1,0 +1,587 @@
+<?xml version="1.0" ?>
+<!--
+  ============================================================
+  Environment 6 — Structured Hospital Maze
+  ============================================================
+  Thesis: Meta-Critic Navigation Controller Evaluation
+  Scene:  12 m × 10 m maze with hospital-realistic passage widths
+  Start:  x=1.0,  y=1.0, yaw=0
+  Goal:   x=11.0, y=9.0
+
+  Difficulty: HARD  (sequential context switching)
+  Purpose:
+    - Forces the meta-critic to switch critic weightings
+      MULTIPLE TIMES within a single navigation episode.
+    - Each maze segment has a different optimal weight profile:
+        * Open cells → speed + goal-progress dominant
+        * 1.2 m passages → clearance + centering dominant
+        * 90° corners → heading alignment dominant
+        * Dead-end approach → recovery behaviour
+    - Directly comparable to BARN Challenge obstacle courses
+      (static, highly-constrained, ordered by difficulty).
+    - Provides many critic-switch events per episode, giving
+      richer training signal than isolated single-scenario runs.
+
+  Corridor layout (top-down, Y increases upward in Gazebo):
+  All passages are 1.2 m wide (hospital staff-only minimum).
+  Wall thickness is 0.2 m throughout.
+
+  Maze structure (12 × 10 m outer boundary):
+  ┌──────────────────────────────────┐  y=10
+  │  [S7]──────────────[GOAL]       │
+  │   │                   │         │
+  │  [C5]──[C6]──[C7]   [C8]       │
+  │          │             │         │
+  │  [C3]  [C4]          [C9]       │
+  │   │     │              │         │
+  │  [C2]──────── ────── [C10]      │
+  │   │                             │
+  │  [C1]──[START]                 │
+  │                                 │
+  └──────────────────────────────────┘  y=0
+    x=0                           x=12
+
+  Passage widths: 1.2 m (clear inside, robot width 0.4 m → 0.4 m each side)
+  Wall height: 2.2 m (realistic hospital ceiling clearance)
+
+  Key context-switch points the meta-critic must handle:
+    CP1: x≈3  y≈1   first right-angle turn (south → east)
+    CP2: x≈3  y≈5   T-junction decision
+    CP3: x≈7  y≈5   narrow straight after junction
+    CP4: x≈9  y≈7   tight left turn into final approach
+    CP5: x≈11 y≈9   precision goal approach
+
+  Usage (ROS 2 / Nav2):
+    ros2 launch gazebo_ros gazebo.launch.py \
+      world:=e6_hospital_maze.world
+
+  Nav2 initial pose:
+    position:    x=1.0  y=1.0  z=0.0
+    orientation: yaw=0.0  (quaternion w=1 x=0 y=0 z=0)
+
+  Nav2 goal pose:
+    position:    x=11.0 y=9.0  z=0.0
+    orientation: yaw=0.0
+  ============================================================
+-->
+<sdf version="1.9">
+  <world name="e6_hospital_maze">
+
+    <!-- ── Physics ─────────────────────────────────────── -->
+    <physics name="default_physics" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>50</iters>
+          <sor>1.3</sor>
+        </solver>
+        <constraints>
+          <cfm>0.0</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>100.0</contact_max_correcting_vel>
+          <contact_surface_layer>0.001</contact_surface_layer>
+        </constraints>
+      </ode>
+    </physics>
+
+    <!-- ── Scene / lighting ─────────────────────────────── -->
+    <scene>
+      <ambient>0.6 0.6 0.6 1.0</ambient>
+      <background>0.7 0.7 0.7 1.0</background>
+      <shadows>false</shadows>
+    </scene>
+
+    <light name="ceiling_light" type="directional">
+      <cast_shadows>false</cast_shadows>
+      <pose>6 5 12 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1.0</diffuse>
+      <specular>0.2 0.2 0.2 1.0</specular>
+      <direction>0 0 -1</direction>
+    </light>
+
+    <gravity>0 0 -9.81</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+
+    <!-- ================================================================
+         FLOOR  —  12 m × 10 m, centred at (6, 5, 0)
+         ================================================================ -->
+    <model name="floor">
+      <static>true</static>
+      <pose>6 5 0 0 0 0</pose>
+      <link name="floor_link">
+        <collision name="col">
+          <geometry><box><size>12 10 0.05</size></box></geometry>
+          <surface>
+            <friction><ode><mu>0.8</mu><mu2>0.8</mu2></ode></friction>
+          </surface>
+        </collision>
+        <visual name="vis">
+          <geometry><box><size>12 10 0.05</size></box></geometry>
+          <material>
+            <ambient>0.85 0.85 0.82 1.0</ambient>
+            <diffuse>0.85 0.85 0.82 1.0</diffuse>
+            <specular>0.1 0.1 0.1 1.0</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================================================================
+         OUTER BOUNDARY WALLS
+         Outer box: x=[0,12], y=[0,10]
+         Wall thickness 0.2 m, height 2.2 m
+         Pose at wall centre (inner face ± 0.1)
+         ================================================================ -->
+
+    <model name="outer_south">
+      <static>true</static>
+      <pose>6 -0.1 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>12.4 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>12.4 0.2 2.2</size></box></geometry>
+          <material><ambient>0.72 0.72 0.72 1</ambient><diffuse>0.72 0.72 0.72 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="outer_north">
+      <static>true</static>
+      <pose>6 10.1 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>12.4 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>12.4 0.2 2.2</size></box></geometry>
+          <material><ambient>0.72 0.72 0.72 1</ambient><diffuse>0.72 0.72 0.72 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="outer_west">
+      <static>true</static>
+      <pose>-0.1 5 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 10.4 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 10.4 2.2</size></box></geometry>
+          <material><ambient>0.72 0.72 0.72 1</ambient><diffuse>0.72 0.72 0.72 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="outer_east">
+      <static>true</static>
+      <pose>12.1 5 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 10.4 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 10.4 2.2</size></box></geometry>
+          <material><ambient>0.72 0.72 0.72 1</ambient><diffuse>0.72 0.72 0.72 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================================================================
+         INTERNAL MAZE WALLS
+         ================================================================
+         Design principles:
+           - All passages 1.2 m wide (hospital minimum for staff corridors)
+           - Walls placed so robot (0.6 × 0.4 m, diag 0.72 m) can
+             navigate passages with ~0.24 m clearance each side
+           - At least one 90-degree turn per route segment
+           - One deliberate dead-end to test recovery behaviour
+           - Route from start (1,1) to goal (11,9) requires ~8 turns
+
+         Coordinate system:
+           All X/Y are CENTRE positions of each wall segment.
+           Size is (length, thickness=0.2, height=2.2) for horizontal
+           walls, or (thickness=0.2, length, height=2.2) for vertical.
+
+         Passage validation:
+           Passage = gap between two parallel wall ends.
+           Min gap = 1.2 m (verified for each passage below).
+         ================================================================ -->
+
+    <!-- ─── Row 1: Bottom section (y ≈ 0–3) ─────────────────────────
+         Creates the entry channel from Start at (1,1) heading east.
+         Then forces a 90° turn north at x≈3.
+         ─────────────────────────────────────────────────────────── -->
+
+    <!--
+         Internal horizontal wall at y=2.2, from x=2.0 to x=12.0
+         (blocks southern half of maze above entry row)
+         Passage left open: x=0 to x=2.0 for entry, and x=3.4 to x=4.6
+         for the first north-turn gap (1.2 m gap centred at x=4.0).
+    -->
+    <!-- Wall segment: x=4.6 → x=12.0  (east of first gap) -->
+    <model name="iw_h_y22_east">
+      <static>true</static>
+      <!-- centre x = (4.6 + 12.0)/2 = 8.3, length = 12.0 - 4.6 = 7.4 -->
+      <pose>8.3 2.2 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>7.4 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>7.4 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Wall segment: x=0 → x=3.4  (west of first gap, blocks south-west corner) -->
+    <model name="iw_h_y22_west">
+      <static>true</static>
+      <!-- centre x = (0 + 3.4)/2 = 1.7, length = 3.4 -->
+      <pose>1.7 2.2 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>3.4 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>3.4 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!--
+         Vertical wall at x=2.0 from y=0 to y=2.2
+         (closes the western side of the entry channel, forces east travel)
+    -->
+    <model name="iw_v_x20_south">
+      <static>true</static>
+      <!-- centre y = 2.2/2 = 1.1, length y = 2.2 -->
+      <pose>2.0 1.1 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 2.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 2.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ─── Row 2: Middle-lower section (y ≈ 2.2–5.6) ───────────────
+         North turn channel: x=3.4 to x=4.6 (1.2 m passage) goes north.
+         At y=5.6 opens into a T-junction cell.
+         East channel at y=3.4 is blocked — dead end for testing recovery.
+         ─────────────────────────────────────────────────────────── -->
+
+    <!--
+         Horizontal wall at y=5.6, from x=0 to x=12
+         with gap at x=3.4–4.6 (continues north channel)
+         and gap at x=8.8–10.0 (east branch continues upward)
+    -->
+    <!-- West segment: x=0 to x=3.4 -->
+    <model name="iw_h_y56_west">
+      <static>true</static>
+      <pose>1.7 5.6 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>3.4 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>3.4 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Centre segment: x=4.6 to x=8.8 -->
+    <model name="iw_h_y56_centre">
+      <static>true</static>
+      <!-- centre x=(4.6+8.8)/2=6.7, len=8.8-4.6=4.2 -->
+      <pose>6.7 5.6 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>4.2 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>4.2 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- East segment: x=10.0 to x=12.0 -->
+    <model name="iw_h_y56_east">
+      <static>true</static>
+      <pose>11.0 5.6 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>2.0 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>2.0 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!--
+         Dead-end spur: horizontal wall at y=3.4 from x=4.6 to x=12
+         with a 1.2 m gap at x=5.4–6.6 (dead-end entrance).
+         The spur goes east to x=12 wall — robot must reverse out.
+    -->
+    <!-- Dead-end wall west of spur gap: x=4.6 to x=5.4 -->
+    <model name="iw_deadend_west">
+      <static>true</static>
+      <pose>5.0 3.4 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.8 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.8 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Dead-end wall east of spur gap: x=6.6 to x=12 -->
+    <model name="iw_deadend_east">
+      <static>true</static>
+      <!-- centre x=(6.6+12)/2=9.3, len=5.4 -->
+      <pose>9.3 3.4 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>5.4 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>5.4 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Dead-end closing wall: x=4.6 vertical from y=2.2 to y=3.4 -->
+    <model name="iw_v_x46_spur_close">
+      <static>true</static>
+      <!-- centre y=(2.2+3.4)/2=2.8, len=1.2 -->
+      <pose>4.6 2.8 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 1.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 1.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ─── Row 3: Upper section (y ≈ 5.6–8.8) ──────────────────────
+         From T-junction at (4.0, 5.6) the correct route goes:
+           East along y=5.6–6.8 corridor to x=8.8
+           North through gap x=8.8–10.0 to y=8.8
+           East along y=8.8 to goal at (11, 9)
+
+         Alternative (wrong) route from T-junction goes west/north
+         and hits a closing wall — tests global planner re-routing.
+         ─────────────────────────────────────────────────────────── -->
+
+    <!--
+         Horizontal wall at y=6.8 from x=0 to x=8.8
+         with gap at x=3.4–4.6 (option to continue north — leads to
+         a closed cell, forcing backtrack to test recovery).
+    -->
+    <!-- West of gap: x=0 to x=3.4 -->
+    <model name="iw_h_y68_west">
+      <static>true</static>
+      <pose>1.7 6.8 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>3.4 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>3.4 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- East of gap: x=4.6 to x=8.8 -->
+    <model name="iw_h_y68_east">
+      <static>true</static>
+      <!-- centre x=(4.6+8.8)/2=6.7, len=4.2 -->
+      <pose>6.7 6.8 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>4.2 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>4.2 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!--
+         Closing wall for false-north branch: vertical at x=3.4
+         from y=6.8 to y=10 — makes the north-west a dead-end.
+    -->
+    <model name="iw_v_x34_close_nw">
+      <static>true</static>
+      <!-- centre y=(6.8+10)/2=8.4, len=3.2 -->
+      <pose>3.4 8.4 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 3.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 3.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!--
+         Horizontal wall at y=8.8 from x=0 to x=8.8 (top of east channel)
+         and from x=10.0 to x=12.0 (closes east end above goal approach)
+    -->
+    <!-- West: x=0 to x=8.8 -->
+    <model name="iw_h_y88_west">
+      <static>true</static>
+      <pose>4.4 8.8 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>8.8 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>8.8 0.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!--
+         East vertical channel walls: contain x=8.8–10.0 north channel
+         Left wall  at x=8.8 from y=2.2 to y=8.8
+         Right wall at x=10.0 from y=2.2 to y=8.8
+    -->
+    <model name="iw_v_x88_east_channel">
+      <static>true</static>
+      <!-- centre y=(2.2+8.8)/2=5.5, len=6.6 -->
+      <pose>8.8 5.5 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 6.6 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 6.6 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="iw_v_x100_east_channel">
+      <static>true</static>
+      <pose>10.0 5.5 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 6.6 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 6.6 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!--
+         Goal approach: horizontal corridor y=8.8 to y=10.0 between
+         x=8.8 and x=12.  x=10.0 east wall stops at y=8.8 (already defined).
+         Need a closing wall at y=8.8 east side: x=10.0 to x=12.0 already
+         handled by outer_north wall at y=10.0.
+         Add a short wall at x=8.8 from y=8.8 to y=10 to close west side
+         of goal approach corridor.
+    -->
+    <model name="iw_v_x88_goal_west">
+      <static>true</static>
+      <!-- centre y=(8.8+10)/2=9.4, len=1.2 -->
+      <pose>8.8 9.4 1.1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 1.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 1.2 2.2</size></box></geometry>
+          <material><ambient>0.68 0.68 0.68 1</ambient><diffuse>0.68 0.68 0.68 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================================================================
+         VISUAL MARKERS  (no collision)
+         ================================================================ -->
+
+    <!-- Start marker (blue) at (1.0, 1.0) -->
+    <model name="marker_start">
+      <static>true</static>
+      <pose>1.0 1.0 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><cylinder><radius>0.3</radius><length>0.01</length></cylinder></geometry>
+          <material>
+            <ambient>0.1 0.3 0.8 0.85</ambient>
+            <diffuse>0.1 0.3 0.8 0.85</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Goal marker (green) at (11.0, 9.0) -->
+    <model name="marker_goal">
+      <static>true</static>
+      <pose>11.0 9.0 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><cylinder><radius>0.3</radius><length>0.01</length></cylinder></geometry>
+          <material>
+            <ambient>0.1 0.75 0.3 0.85</ambient>
+            <diffuse>0.1 0.75 0.3 0.85</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!--
+         Context-switch point markers (amber) — optional, remove if
+         they clutter the costmap. These mark locations where the
+         meta-critic is expected to change weight assignments.
+    -->
+    <!-- CP1: first turn (x=4.0, y=2.2) -->
+    <model name="marker_cp1">
+      <static>true</static>
+      <pose>4.0 2.2 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><cylinder><radius>0.15</radius><length>0.01</length></cylinder></geometry>
+          <material><ambient>0.9 0.6 0.1 0.7</ambient><diffuse>0.9 0.6 0.1 0.7</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- CP2: T-junction (x=4.0, y=5.6) -->
+    <model name="marker_cp2">
+      <static>true</static>
+      <pose>4.0 5.6 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><cylinder><radius>0.15</radius><length>0.01</length></cylinder></geometry>
+          <material><ambient>0.9 0.6 0.1 0.7</ambient><diffuse>0.9 0.6 0.1 0.7</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- CP3: east channel entry (x=9.4, y=5.6) -->
+    <model name="marker_cp3">
+      <static>true</static>
+      <pose>9.4 5.6 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><cylinder><radius>0.15</radius><length>0.01</length></cylinder></geometry>
+          <material><ambient>0.9 0.6 0.1 0.7</ambient><diffuse>0.9 0.6 0.1 0.7</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- CP4: turn into goal approach (x=9.4, y=8.8) -->
+    <model name="marker_cp4">
+      <static>true</static>
+      <pose>9.4 8.8 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><cylinder><radius>0.15</radius><length>0.01</length></cylinder></geometry>
+          <material><ambient>0.9 0.6 0.1 0.7</ambient><diffuse>0.9 0.6 0.1 0.7</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================================================================
+         GAZEBO GUI CAMERA — overhead view of full maze
+         ================================================================ -->
+    <gui fullscreen="0">
+      <camera name="user_camera">
+        <pose>6 5 28 0 1.5707 0</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
+
+  </world>
+</sdf>

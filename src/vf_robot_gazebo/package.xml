@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd"
+            schematypens="http://www.w3.org/2001/XMLSchema"?>
+
+<!-- HYBRID ament_cmake + Python — Gazebo simulation only, no SLAM, no Nav2.
+     C++ nodes in src/, Python scripts in vf_robot_gazebo/scripts/
+     URDF + meshes live in vf_robot_description (single source of truth) -->
+
+<package format="3">
+  <name>vf_robot_gazebo</name>
+  <version>0.1.0</version>
+  <description>
+    Gazebo simulation package for the VF ViroFighter Robot.
+    Standalone Gazebo only - no SLAM, no Nav2.
+    URDF and meshes live in vf_robot_description.
+  </description>
+
+  <maintainer email="olipravin18@gmail.com">Pravin</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- Build system: ament_cmake (C++) + ament_cmake_python (Python scripts) -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <!-- Core dependencies — needed at both build and runtime -->
+  <depend>rclcpp</depend>
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>       <!-- sensor_msgs/Range — ultrasound -->
+  <depend>geometry_msgs</depend>     <!-- geometry_msgs/Twist — cmd_vel -->
+  <depend>nav_msgs</depend>          <!-- nav_msgs/Odometry -->
+  <depend>tf2</depend>
+  <depend>gazebo_ros</depend>        <!-- ROS2/Gazebo bridge + plugins -->
+  <depend>gazebo_ros_pkgs</depend>
+  <depend>vf_robot_messages</depend> <!-- custom UltraSound.msg -->
+
+  <!-- URDF and meshes live here — colcon builds this BEFORE vf_robot_gazebo -->
+  <depend>vf_robot_description</depend>
+
+  <!-- Runtime-only tools — launched by launch files, not compiled against -->
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rqt_robot_steering</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <!-- Gazebo searches models/ for world environment models (hospital, corridors etc.) -->
+    <gazebo_ros gazebo_model_path="${prefix}/share/${name}/models"/>
+  </export>
+
+</package>

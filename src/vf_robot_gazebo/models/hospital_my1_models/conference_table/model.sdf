@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="conference_table">
+    <static>true</static>
+    <link name="top">
+      <pose>0 0 0.76 0 0 0</pose>
+      <collision name="c"><geometry><box><size>2.4 1.0 0.06</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>2.4 1.0 0.06</size></box></geometry>
+        <material><ambient>0.45 0.3 0.15 1</ambient><diffuse>0.45 0.3 0.15 1</diffuse>
+          <specular>0.3 0.2 0.1 1</specular></material>
+      </visual>
+    </link>
+    <link name="leg1"><pose>1.1 0.43 0.37 0 0 0</pose>
+      <collision name="c"><geometry><cylinder><radius>0.04</radius><length>0.74</length></cylinder></geometry></collision>
+      <visual name="v"><geometry><cylinder><radius>0.04</radius><length>0.74</length></cylinder></geometry>
+        <material><ambient>0.5 0.4 0.3 1</ambient><diffuse>0.5 0.4 0.3 1</diffuse></material></visual>
+    </link>
+    <link name="leg2"><pose>1.1 -0.43 0.37 0 0 0</pose>
+      <collision name="c"><geometry><cylinder><radius>0.04</radius><length>0.74</length></cylinder></geometry></collision>
+      <visual name="v"><geometry><cylinder><radius>0.04</radius><length>0.74</length></cylinder></geometry>
+        <material><ambient>0.5 0.4 0.3 1</ambient><diffuse>0.5 0.4 0.3 1</diffuse></material></visual>
+    </link>
+    <link name="leg3"><pose>-1.1 0.43 0.37 0 0 0</pose>
+      <collision name="c"><geometry><cylinder><radius>0.04</radius><length>0.74</length></cylinder></geometry></collision>
+      <visual name="v"><geometry><cylinder><radius>0.04</radius><length>0.74</length></cylinder></geometry>
+        <material><ambient>0.5 0.4 0.3 1</ambient><diffuse>0.5 0.4 0.3 1</diffuse></material></visual>
+    </link>
+    <link name="leg4"><pose>-1.1 -0.43 0.37 0 0 0</pose>
+      <collision name="c"><geometry><cylinder><radius>0.04</radius><length>0.74</length></cylinder></geometry></collision>
+      <visual name="v"><geometry><cylinder><radius>0.04</radius><length>0.74</length></cylinder></geometry>
+        <material><ambient>0.5 0.4 0.3 1</ambient><diffuse>0.5 0.4 0.3 1</diffuse></material></visual>
+    </link>
+  </model>
+</sdf>

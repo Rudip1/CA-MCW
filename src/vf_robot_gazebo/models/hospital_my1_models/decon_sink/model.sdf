@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="decon_sink">
+    <static>true</static>
+    <!-- Cabinet body -->
+    <link name="cabinet">
+      <pose>0 0 0.45 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.75 0.55 0.9</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.75 0.55 0.9</size></box></geometry>
+        <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Counter top -->
+    <link name="top">
+      <pose>0 0 0.92 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.78 0.58 0.04</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.78 0.58 0.04</size></box></geometry>
+        <material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Sink basin -->
+    <link name="basin">
+      <pose>0 0 0.9 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.55 0.4 0.12</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.55 0.4 0.12</size></box></geometry>
+        <material><ambient>0.8 0.9 1.0 1</ambient><diffuse>0.8 0.9 1.0 0.7</diffuse></material>
+      </visual>
+    </link>
+    <!-- Faucet post -->
+    <link name="faucet">
+      <pose>0 -0.15 1.05 0 0 0</pose>
+      <collision name="c"><geometry><cylinder><radius>0.015</radius><length>0.2</length></cylinder></geometry></collision>
+      <visual name="v">
+        <geometry><cylinder><radius>0.015</radius><length>0.2</length></cylinder></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse>
+          <specular>1 1 1 1</specular></material>
+      </visual>
+    </link>
+    <!-- Faucet spout -->
+    <link name="spout">
+      <pose>0 -0.05 1.15 0 1.0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.012</radius><length>0.15</length></cylinder></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse></material></visual>
+    </link>
+  </model>
+</sdf>

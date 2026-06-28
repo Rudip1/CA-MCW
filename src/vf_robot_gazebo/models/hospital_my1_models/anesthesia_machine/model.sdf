@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="anesthesia_machine">
+    <static>true</static>
+    <!-- Main body -->
+    <link name="body">
+      <pose>0 0 0.75 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.6 0.45 1.5</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.6 0.45 1.5</size></box></geometry>
+        <material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Screen/display panel -->
+    <link name="screen">
+      <pose>0 -0.23 1.2 0 -0.2 0</pose>
+      <collision name="c"><geometry><box><size>0.3 0.02 0.22</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.3 0.02 0.22</size></box></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.05 0.35 0.65 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Gas cylinder -->
+    <link name="cylinder">
+      <pose>0.25 0.1 0.5 0 0 0</pose>
+      <collision name="c"><geometry><cylinder><radius>0.065</radius><length>0.9</length></cylinder></geometry></collision>
+      <visual name="v">
+        <geometry><cylinder><radius>0.065</radius><length>0.9</length></cylinder></geometry>
+        <material><ambient>0.2 0.4 0.8 1</ambient><diffuse>0.2 0.4 0.8 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Wheels (4) -->
+    <link name="w1"><pose>0.25 0.18 0.06 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.06</radius><length>0.05</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.06</radius><length>0.05</length></cylinder></geometry></collision>
+    </link>
+    <link name="w2"><pose>-0.25 0.18 0.06 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.06</radius><length>0.05</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.06</radius><length>0.05</length></cylinder></geometry></collision>
+    </link>
+    <link name="w3"><pose>0.25 -0.18 0.06 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.06</radius><length>0.05</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.06</radius><length>0.05</length></cylinder></geometry></collision>
+    </link>
+    <link name="w4"><pose>-0.25 -0.18 0.06 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.06</radius><length>0.05</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.06</radius><length>0.05</length></cylinder></geometry></collision>
+    </link>
+  </model>
+</sdf>

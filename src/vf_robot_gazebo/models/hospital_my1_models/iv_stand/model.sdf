@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="iv_stand">
+    <static>true</static>
+    <link name="pole">
+      <pose>0 0 0.9 0 0 0</pose>
+      <collision name="c"><geometry><cylinder><radius>0.015</radius><length>1.8</length></cylinder></geometry></collision>
+      <visual name="v">
+        <geometry><cylinder><radius>0.015</radius><length>1.8</length></cylinder></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient><diffuse>0.8 0.8 0.8 1</diffuse>
+          <specular>0.9 0.9 0.9 1</specular></material>
+      </visual>
+    </link>
+    <!-- Tripod base arms -->
+    <link name="base1"><pose>0.18 0 0.04 0 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.01</radius><length>0.38</length></cylinder></geometry>
+        <material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.01</radius><length>0.38</length></cylinder></geometry></collision>
+    </link>
+    <link name="base2"><pose>-0.09 0.155 0.04 0 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.01</radius><length>0.38</length></cylinder></geometry>
+        <material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.01</radius><length>0.38</length></cylinder></geometry></collision>
+    </link>
+    <link name="base3"><pose>-0.09 -0.155 0.04 0 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.01</radius><length>0.38</length></cylinder></geometry>
+        <material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.01</radius><length>0.38</length></cylinder></geometry></collision>
+    </link>
+    <!-- IV Bag -->
+    <link name="bag">
+      <pose>0 0 1.78 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.1 0.05 0.2</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.1 0.05 0.2</size></box></geometry>
+        <material><ambient>0.8 0.95 0.8 0.8</ambient><diffuse>0.8 0.95 0.8 0.8</diffuse></material>
+      </visual>
+    </link>
+    <!-- Hook -->
+    <link name="hook">
+      <pose>0 0 1.8 0 0 0</pose>
+      <visual name="v"><geometry><sphere><radius>0.02</radius></sphere></geometry></visual>
+    </link>
+  </model>
+</sdf>

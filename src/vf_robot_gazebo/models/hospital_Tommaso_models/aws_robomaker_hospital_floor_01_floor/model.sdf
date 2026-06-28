@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="aws_robomaker_hospital_floor_01_floor">
+    <link name="link">
+      <visual name="visual">
+	    <geometry>
+          <mesh>
+            <uri>model://aws_robomaker_hospital_floor_01_floor/meshes/aws_robomaker_hospital_floor_01_floor_visual.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://aws_robomaker_hospital_floor_01_floor/meshes/aws_robomaker_hospital_floor_01_floor_collision.dae</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <!-- Was mu=100 / mu2=50 (AWS robomaker default). With our wheel
+                   collision on a coarse triangulated DAE that produced
+                   stick-slip jitter at rest. Normalised to mu=mu2=1 — matches
+                   default Gazebo and the euroknows hospital.stl floor, which
+                   runs smoothly under the same wheel model. -->
+              <mu>1.0</mu>
+              <mu2>1.0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>    
+</link>
+  <static>1</static>
+  </model>
+</sdf>

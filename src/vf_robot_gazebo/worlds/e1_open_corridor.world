@@ -1,0 +1,248 @@
+<?xml version="1.0" ?>
+<!--
+  ============================================================
+  Environment 1 — Open Runway
+  ============================================================
+  Thesis: Meta-Critic Navigation Controller Evaluation
+  Scene:  20 m × 4 m flat corridor, no obstacles
+  Start:  x=1.0,  y=2.0, yaw=0  (robot faces +X)
+  Goal:   x=19.0, y=2.0
+  Floor:  z=0 (flat, featureless)
+
+  Difficulty: EASY  (baseline efficiency ceiling)
+  Purpose:
+    - Establishes the upper-bound on travel speed and path
+      efficiency for all other comparisons.
+    - The meta-critic should learn to DOWN-WEIGHT obstacle
+      clearance critics and UP-WEIGHT velocity / goal-progress
+      critics in this context.
+    - Metric baseline: record time-to-goal, path length,
+      mean velocity. All other environments are normalised
+      against these values.
+
+  Walls:
+    North wall: y=4.0  (inner face)
+    South wall: y=0.0  (inner face)
+    West  wall: x=0.0  (inner face)
+    East  wall: x=20.0 (inner face)
+    Wall thickness: 0.2 m  (extends outward)
+    Wall height:    2.5 m
+
+  Usage (ROS 2 / Nav2):
+    ros2 launch gazebo_ros gazebo.launch.py \
+      world:=e1_open_corridor.world
+
+  Nav2 initial pose (amcl / slam_toolbox):
+    position:    x=1.0  y=2.0  z=0.0
+    orientation: yaw=0.0  (quaternion w=1 x=0 y=0 z=0)
+
+  Nav2 goal pose:
+    position:    x=19.0 y=2.0  z=0.0
+    orientation: yaw=0.0
+  ============================================================
+-->
+<sdf version="1.9">
+  <world name="e1_open_corridor">
+
+    <!-- ── Physics ─────────────────────────────────────── -->
+    <physics name="default_physics" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>50</iters>
+          <sor>1.3</sor>
+        </solver>
+        <constraints>
+          <cfm>0.0</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>100.0</contact_max_correcting_vel>
+          <contact_surface_layer>0.001</contact_surface_layer>
+        </constraints>
+      </ode>
+    </physics>
+
+    <!-- ── Scene / lighting ─────────────────────────────── -->
+    <scene>
+      <ambient>0.6 0.6 0.6 1.0</ambient>
+      <background>0.7 0.7 0.7 1.0</background>
+      <shadows>false</shadows>
+    </scene>
+
+    <light name="ceiling_light" type="directional">
+      <cast_shadows>false</cast_shadows>
+      <pose>10 2 8 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1.0</diffuse>
+      <specular>0.2 0.2 0.2 1.0</specular>
+      <direction>0 0 -1</direction>
+    </light>
+
+    <!-- ── Gravity ───────────────────────────────────────── -->
+    <gravity>0 0 -9.81</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+
+    <!-- ================================================================
+         FLOOR
+         20 m × 4 m ground plane, centred at x=10 y=2
+         ================================================================ -->
+    <model name="floor">
+      <static>true</static>
+      <pose>10 2 0 0 0 0</pose>
+      <link name="floor_link">
+        <collision name="floor_collision">
+          <geometry>
+            <box><size>20 4 0.05</size></box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode><mu>0.8</mu><mu2>0.8</mu2></ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="floor_visual">
+          <geometry>
+            <box><size>20 4 0.05</size></box>
+          </geometry>
+          <material>
+            <ambient>0.85 0.85 0.82 1.0</ambient>
+            <diffuse>0.85 0.85 0.82 1.0</diffuse>
+            <specular>0.1 0.1 0.1 1.0</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================================================================
+         WALLS
+         Thickness 0.2 m, height 2.5 m.
+         Each wall is placed so its INNER face is at the corridor boundary.
+         Pose is at the wall CENTRE (inner face ± 0.1 m).
+         ================================================================ -->
+
+    <!-- South wall  y=0  inner face → centre at y=-0.1 -->
+    <model name="wall_south">
+      <static>true</static>
+      <pose>10 -0.1 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="col">
+          <geometry><box><size>20.4 0.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="vis">
+          <geometry><box><size>20.4 0.2 2.5</size></box></geometry>
+          <material>
+            <ambient>0.75 0.75 0.75 1.0</ambient>
+            <diffuse>0.75 0.75 0.75 1.0</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- North wall  y=4  inner face → centre at y=4.1 -->
+    <model name="wall_north">
+      <static>true</static>
+      <pose>10 4.1 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="col">
+          <geometry><box><size>20.4 0.2 2.5</size></box></geometry>
+        </collision>
+        <visual name="vis">
+          <geometry><box><size>20.4 0.2 2.5</size></box></geometry>
+          <material>
+            <ambient>0.75 0.75 0.75 1.0</ambient>
+            <diffuse>0.75 0.75 0.75 1.0</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- West wall  x=0  inner face → centre at x=-0.1 -->
+    <model name="wall_west">
+      <static>true</static>
+      <pose>-0.1 2 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="col">
+          <geometry><box><size>0.2 4.4 2.5</size></box></geometry>
+        </collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 4.4 2.5</size></box></geometry>
+          <material>
+            <ambient>0.75 0.75 0.75 1.0</ambient>
+            <diffuse>0.75 0.75 0.75 1.0</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- East wall  x=20  inner face → centre at x=20.1 -->
+    <model name="wall_east">
+      <static>true</static>
+      <pose>20.1 2 1.25 0 0 0</pose>
+      <link name="link">
+        <collision name="col">
+          <geometry><box><size>0.2 4.4 2.5</size></box></geometry>
+        </collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 4.4 2.5</size></box></geometry>
+          <material>
+            <ambient>0.75 0.75 0.75 1.0</ambient>
+            <diffuse>0.75 0.75 0.75 1.0</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================================================================
+         VISUAL MARKERS
+         Thin flat cylinders flush with the floor to mark start and goal.
+         These have NO collision — they are purely for visualisation.
+         ================================================================ -->
+
+    <!-- Start marker (blue) at x=1 y=2 -->
+    <model name="marker_start">
+      <static>true</static>
+      <pose>1 2 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry>
+            <cylinder><radius>0.25</radius><length>0.01</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.1 0.3 0.8 0.8</ambient>
+            <diffuse>0.1 0.3 0.8 0.8</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Goal marker (green) at x=19 y=2 -->
+    <model name="marker_goal">
+      <static>true</static>
+      <pose>19 2 0.026 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry>
+            <cylinder><radius>0.25</radius><length>0.01</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.1 0.75 0.3 0.8</ambient>
+            <diffuse>0.1 0.75 0.3 0.8</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ================================================================
+         GAZEBO GUI CAMERA — birds-eye view of the full corridor
+         ================================================================ -->
+    <gui fullscreen="0">
+      <camera name="user_camera">
+        <pose>10 2 22 0 1.5707 0</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
+
+  </world>
+</sdf>

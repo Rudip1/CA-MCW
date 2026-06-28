@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="endoscopy_cart">
+    <static>true</static>
+    <!-- Tower body stacked modules -->
+    <link name="tower">
+      <pose>0 0 0.75 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.5 0.45 1.5</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.5 0.45 1.5</size></box></geometry>
+        <material><ambient>0.15 0.15 0.18 1</ambient><diffuse>0.15 0.15 0.18 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Top monitor -->
+    <link name="monitor">
+      <pose>0 -0.23 1.45 0 -0.25 0</pose>
+      <collision name="c"><geometry><box><size>0.4 0.05 0.3</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.4 0.05 0.3</size></box></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Monitor screen glow -->
+    <link name="screen">
+      <pose>0 -0.26 1.45 0 -0.25 0</pose>
+      <visual name="v">
+        <geometry><box><size>0.36 0.01 0.26</size></box></geometry>
+        <material><ambient>0.0 0.05 0.0 1</ambient><diffuse>0 0 0 1</diffuse>
+          <emissive>0.1 0.8 0.3 1</emissive></material>
+      </visual>
+    </link>
+    <!-- Module separators -->
+    <link name="divider1">
+      <pose>0 0 0.4 0 0 0</pose>
+      <visual name="v"><geometry><box><size>0.52 0.47 0.015</size></box></geometry>
+        <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material></visual>
+    </link>
+    <link name="divider2">
+      <pose>0 0 0.75 0 0 0</pose>
+      <visual name="v"><geometry><box><size>0.52 0.47 0.015</size></box></geometry>
+        <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material></visual>
+    </link>
+    <!-- Wheels (4) -->
+    <link name="w1"><pose>0.21 0.19 0.06 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry></collision>
+    </link>
+    <link name="w2"><pose>0.21 -0.19 0.06 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry></collision>
+    </link>
+    <link name="w3"><pose>-0.21 0.19 0.06 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry></collision>
+    </link>
+    <link name="w4"><pose>-0.21 -0.19 0.06 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry></collision>
+    </link>
+  </model>
+</sdf>

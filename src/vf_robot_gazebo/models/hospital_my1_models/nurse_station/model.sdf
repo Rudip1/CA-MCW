@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="nurse_station">
+    <static>true</static>
+    <!-- Counter body -->
+    <link name="counter">
+      <pose>0 0 0.5 0 0 0</pose>
+      <collision name="c"><geometry><box><size>1.8 0.65 1.0</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>1.8 0.65 1.0</size></box></geometry>
+        <material><ambient>0.5 0.6 0.7 1</ambient><diffuse>0.5 0.6 0.7 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Counter top -->
+    <link name="top">
+      <pose>0 0 1.02 0 0 0</pose>
+      <collision name="c"><geometry><box><size>1.84 0.68 0.04</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>1.84 0.68 0.04</size></box></geometry>
+        <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- 2 monitors -->
+    <link name="mon1">
+      <pose>-0.45 -0.18 1.28 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.35 0.05 0.26</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.35 0.05 0.26</size></box></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+      </visual>
+    </link>
+    <link name="mon1_screen">
+      <pose>-0.45 -0.21 1.28 0 0 0</pose>
+      <visual name="v"><geometry><box><size>0.31 0.01 0.22</size></box></geometry>
+        <material><ambient>0.6 0.8 1 1</ambient><diffuse>0.5 0.7 1 1</diffuse>
+          <emissive>0.2 0.4 0.7 1</emissive></material></visual>
+    </link>
+    <link name="mon2">
+      <pose>0.45 -0.18 1.28 0 0 0</pose>
+      <collision name="c"><geometry><box><size>0.35 0.05 0.26</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>0.35 0.05 0.26</size></box></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+      </visual>
+    </link>
+    <link name="mon2_screen">
+      <pose>0.45 -0.21 1.28 0 0 0</pose>
+      <visual name="v"><geometry><box><size>0.31 0.01 0.22</size></box></geometry>
+        <material><ambient>0.6 0.8 1 1</ambient><diffuse>0.5 0.7 1 1</diffuse>
+          <emissive>0.2 0.4 0.7 1</emissive></material></visual>
+    </link>
+  </model>
+</sdf>

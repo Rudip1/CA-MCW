@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="stretcher">
+    <static>true</static>
+    <link name="bed_frame">
+      <pose>0 0 0.72 0 0 0</pose>
+      <collision name="c"><geometry><box><size>1.95 0.75 0.08</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>1.95 0.75 0.08</size></box></geometry>
+        <material><ambient>0.7 0.7 0.75 1</ambient><diffuse>0.7 0.7 0.75 1</diffuse></material>
+      </visual>
+    </link>
+    <link name="mattress">
+      <pose>0 0 0.78 0 0 0</pose>
+      <collision name="c"><geometry><box><size>1.9 0.7 0.1</size></box></geometry></collision>
+      <visual name="v">
+        <geometry><box><size>1.9 0.7 0.1</size></box></geometry>
+        <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material>
+      </visual>
+    </link>
+    <!-- Side rails -->
+    <link name="rail_l">
+      <pose>0 0.39 0.85 0 0 0</pose>
+      <visual name="v"><geometry><box><size>1.85 0.02 0.2</size></box></geometry>
+        <material><ambient>0.6 0.6 0.65 1</ambient><diffuse>0.6 0.6 0.65 1</diffuse></material></visual>
+    </link>
+    <link name="rail_r">
+      <pose>0 -0.39 0.85 0 0 0</pose>
+      <visual name="v"><geometry><box><size>1.85 0.02 0.2</size></box></geometry>
+        <material><ambient>0.6 0.6 0.65 1</ambient><diffuse>0.6 0.6 0.65 1</diffuse></material></visual>
+    </link>
+    <!-- Scissor legs -->
+    <link name="leg_support_1"><pose>0.6 0 0.36 0 0 0</pose>
+      <collision name="c"><geometry><cylinder><radius>0.025</radius><length>0.72</length></cylinder></geometry></collision>
+      <visual name="v"><geometry><cylinder><radius>0.025</radius><length>0.72</length></cylinder></geometry>
+        <material><ambient>0.65 0.65 0.65 1</ambient><diffuse>0.65 0.65 0.65 1</diffuse></material></visual>
+    </link>
+    <link name="leg_support_2"><pose>-0.6 0 0.36 0 0 0</pose>
+      <collision name="c"><geometry><cylinder><radius>0.025</radius><length>0.72</length></cylinder></geometry></collision>
+      <visual name="v"><geometry><cylinder><radius>0.025</radius><length>0.72</length></cylinder></geometry>
+        <material><ambient>0.65 0.65 0.65 1</ambient><diffuse>0.65 0.65 0.65 1</diffuse></material></visual>
+    </link>
+    <!-- Wheels (4) -->
+    <link name="w1"><pose>0.85 0.33 0.07 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.065</radius><length>0.04</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.065</radius><length>0.04</length></cylinder></geometry></collision>
+    </link>
+    <link name="w2"><pose>0.85 -0.33 0.07 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.065</radius><length>0.04</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.065</radius><length>0.04</length></cylinder></geometry></collision>
+    </link>
+    <link name="w3"><pose>-0.85 0.33 0.07 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.065</radius><length>0.04</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.065</radius><length>0.04</length></cylinder></geometry></collision>
+    </link>
+    <link name="w4"><pose>-0.85 -0.33 0.07 1.5708 0 0</pose>
+      <visual name="v"><geometry><cylinder><radius>0.065</radius><length>0.04</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+      <collision name="c"><geometry><cylinder><radius>0.065</radius><length>0.04</length></cylinder></geometry></collision>
+    </link>
+  </model>
+</sdf>
