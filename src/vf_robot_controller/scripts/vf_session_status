@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+"""
+vf_session_status — thin wrapper so this is importable as a ros2 console.
+
+Resolves to ``python3 -m vf_controller.data_collection.session_status``.
+"""
+import sys
+from vf_controller.data_collection.session_status import main
+
+if __name__ == "__main__":
+    sys.exit(main())

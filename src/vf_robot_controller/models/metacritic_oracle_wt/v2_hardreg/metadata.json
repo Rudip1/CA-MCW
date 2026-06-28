@@ -1,0 +1,39 @@
+{
+  "model_kind": "meta_critic_inference",
+  "in_dim": 130,
+  "target_dim": 11,
+  "channel_names": [
+    "robot_state",
+    "context",
+    "path_geometry",
+    "gcf_rosette",
+    "critic_history",
+    "obstacle_dynamics",
+    "reynolds"
+  ],
+  "channel_dims": [
+    9,
+    9,
+    14,
+    48,
+    30,
+    16,
+    4
+  ],
+  "critic_names": [
+    "WeightedConstraintCritic",
+    "WeightedCostCritic",
+    "WeightedGoalCritic",
+    "WeightedGoalAngleCritic",
+    "WeightedPathAlignCritic",
+    "WeightedPathFollowCritic",
+    "WeightedPathAngleCritic",
+    "WeightedPreferForwardCritic",
+    "CorridorCritic",
+    "VolumetricCritic",
+    "DynamicObstacleCritic"
+  ],
+  "norm_path": "/home/pravin/cogni-nav-x0/src/vf_robot_controller/models/metacritic_oracle_wt/v2_hardreg/feature_norm.json",
+  "training_run_id": "v2_hardreg",
+  "git_commit": "ab8fbd1"
+}

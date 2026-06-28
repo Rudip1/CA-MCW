@@ -1,0 +1,41 @@
+{
+  "model_kind": "meta_critic_raw_critics",
+  "in_dim": 170,
+  "target_dim": 11,
+  "channel_names": [
+    "robot_state",
+    "context",
+    "path_geometry",
+    "gcf_rosette",
+    "critic_history",
+    "obstacle_dynamics",
+    "reynolds",
+    "slam_persistent"
+  ],
+  "channel_dims": [
+    9,
+    9,
+    14,
+    48,
+    30,
+    16,
+    4,
+    40
+  ],
+  "critic_names": [
+    "WeightedConstraintCritic",
+    "WeightedCostCritic",
+    "WeightedGoalCritic",
+    "WeightedGoalAngleCritic",
+    "WeightedPathAlignCritic",
+    "WeightedPathFollowCritic",
+    "WeightedPathAngleCritic",
+    "WeightedPreferForwardCritic",
+    "CorridorCritic",
+    "VolumetricCritic",
+    "DynamicObstacleCritic"
+  ],
+  "norm_path": "/home/pravin/cogni-nav-x0/src/vf_robot_controller/models/metacritic_raw_wt/v3_tuned/feature_norm.json",
+  "training_run_id": "v3_tuned",
+  "git_commit": "ab8fbd1"
+}

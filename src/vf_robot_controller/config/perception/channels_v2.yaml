@@ -1,0 +1,13 @@
+# channels_v2.yaml — adds Reynolds primitive activations.
+# Total: ~130 dims.
+
+feature_extractor_node:
+  ros__parameters:
+    enabled_channels:
+      - robot_state            # 9
+      - context                # 9
+      - path_geometry          # 14
+      - gcf_rosette            # 48
+      - critic_history         # 30
+      - obstacle_dynamics      # 16
+      - reynolds               # 4

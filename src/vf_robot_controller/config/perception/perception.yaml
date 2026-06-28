@@ -1,0 +1,44 @@
+# perception.yaml — top-level perception config.
+
+gcf_node:
+  ros__parameters:
+    update_rate_hz: 5.0
+    gcf_radius: 2.0
+    gcf_clutter_radius: 0.6
+    gcf_weight_2d: 0.4
+    gcf_weight_clutter: 0.3
+    gcf_weight_volumetric: 0.3
+    use_3d: true
+    voxel_leaf_size: 0.05
+    # Plural-array name matches gcf_node's declare_parameter. The
+    # Gazebo camera plugin auto-prepends the camera-link name to the
+    # ros namespace, so a sensor at namespace=/d435i/depth with
+    # link-name=d435i_depth + point_cloud_topic_name=points actually
+    # publishes on /d435i/depth/d435i_depth/points (verified via
+    # `ros2 topic list`). The shorter /d435i/depth/points topic exists
+    # but is empty — subscribing to it produces no data.
+    pointcloud_topics:
+      - "/d435i/depth/d435i_depth/points"
+      - "/d455/depth/d455_depth/points"
+    costmap_topic: "/local_costmap/costmap"
+    publish_topic: "/vf/gcf_state"
+
+context_node:
+  ros__parameters:
+    update_rate_hz: 10.0
+    publish_topic: "/vf/context_state"
+
+feature_extractor_node:
+  ros__parameters:
+    update_rate_hz: 20.0
+    publish_topic: "/vf/features"
+    odom_topic: "/odom"
+    gcf_topic: "/vf/gcf_state"
+    context_topic: "/vf/context_state"
+    plan_topic: "/plan"
+    goal_topic: "/goal_pose"
+    costmap_topic: "/local_costmap/costmap"
+    critic_costs_topic: "/vf/per_critic_costs"
+    history_capacity: 10
+    # enabled_channels comes from config/perception/channels_v*.yaml
+    # (loaded as a second parameter file by perception_launch.py).

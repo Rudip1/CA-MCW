@@ -1,0 +1,12 @@
+# channels_v1.yaml — Channels 1-7, no Reynolds, no SLAM.
+# Total: ~126 dims.
+
+feature_extractor_node:
+  ros__parameters:
+    enabled_channels:
+      - robot_state            # 9
+      - context                # 9
+      - path_geometry          # 14
+      - gcf_rosette            # 48
+      - critic_history         # 30
+      - obstacle_dynamics      # 16

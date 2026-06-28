@@ -1,0 +1,9 @@
+<library path="vf_controller_lib">
+  <class type="vf_robot_controller::VFController"
+         base_class_type="nav2_core::Controller">
+    <description>
+      VF adaptive meta-critic controller. Inherits MPPI behavior from upstream
+      nav2_mppi_controller and injects per-critic weights from a learned policy.
+    </description>
+  </class>
+</library>

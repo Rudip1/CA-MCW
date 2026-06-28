@@ -1,0 +1,14 @@
+# vf_controller_topic.yaml — weights from Python node via topic.
+# Useful during model development without recompiling C++.
+
+controller_server:
+  ros__parameters:
+    use_sim_time: true
+    controller_frequency: 20.0
+    FollowPath:
+      plugin: "vf_robot_controller::VFController"
+      controller_mode: "inferencewt"
+      weight_provider: "topic"
+      weight_topic: "/vf_controller/meta_weights"
+      weight_timeout_ms: 200
+      fallback_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

@@ -1,0 +1,149 @@
+# =============================================================================
+# vf_robot_bringup / config / nav2 / controllers / vf_inference_eval.yaml
+# =============================================================================
+# VF Robot Controller — INFERENCE mode, EVALUATION variant
+# Identical to vf_inference.yaml but with visualize: true for thesis eval runs.
+# WARNING: Do NOT use for live robot operation without safety review.
+# Merge fragment for nav2_base.yaml.
+# =============================================================================
+
+controller_server:
+  ros__parameters:
+    FollowPath:
+      plugin: "vf_robot_controller::VFRobotController"
+
+      # ── Mode ────────────────────────────────────────────────────────────────
+      controller_mode: "inference"
+
+      # ── MPPI optimizer ──────────────────────────────────────────────────────
+      time_steps: 50          # 50 × 0.05 s = 2.5 s horizon
+      model_dt: 0.05
+      batch_size: 300
+      iteration_count: 2
+      temperature: 0.5
+      gamma: 0.015
+      open_loop: false
+      motion_model: "DiffDrive"
+      retry_attempt_limit: 1
+
+      # ── Velocity / acceleration limits (virofighter)
+      vx_max: 0.30
+      vx_min: 0.0
+      vy_max: 0.0
+      wz_max: 1.0
+      ax_max: 0.4
+      ax_min: -0.4
+      ay_max: 0.0
+      ay_min: 0.0
+      az_max: 1.2
+
+      # ── Sampling noise ───────────────────────────────────────────────────────
+      vx_std: 0.12
+      vy_std: 0.0
+      wz_std: 0.25
+
+      # ── GCF — Geometric Complexity Field ────────────────────────────────────
+      gcf_radius: 2.0
+      gcf_weight_2d: 0.5
+      gcf_weight_clutter: 0.25
+      gcf_weight_volumetric: 0.25
+      gcf_clutter_radius: 0.8
+      tight_gcf_threshold: 0.55
+      use_3d_clearance: false
+
+      # ── Robot geometry ───────────────────────────────────────────────────────
+      robot_length: 0.281
+      robot_width: 0.306
+      robot_height_min: 0.05
+      robot_height_max: 0.40
+      safety_inflation: 0.07
+
+      # ── Visualization (ON for INFERENCE_EVAL — thesis eval runs) ────────────
+      visualize: true
+      publish_optimal_trajectory: true
+
+      TrajectoryVisualizer:
+        trajectory_step: 5
+        time_step: 3
+
+      # ── Critics ──────────────────────────────────────────────────────────────
+      critics:
+        - "ConstraintCritic"
+        - "GoalCritic"
+        - "GoalAngleCritic"
+        - "ObstaclesCritic"
+        - "PathAlignCritic"
+        - "PathFollowCritic"
+        - "PreferForwardCritic"
+        - "CorridorCritic"
+        - "VolumetricCritic"
+        - "DynamicObstacleCritic"
+
+      ConstraintCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 4.0
+
+      GoalCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 1.2
+
+      GoalAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.0
+        threshold_to_consider: 0.5
+
+      ObstaclesCritic:
+        enabled: true
+        cost_power: 1
+        repulsion_weight: 1.5
+        critical_weight: 20.0
+        consider_footprint: true
+        collision_cost: 100000.0
+        collision_margin_distance: 0.10
+        near_goal_distance: 0.5
+
+      PathAlignCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 14.0
+        max_path_occupancy_ratio: 0.05
+        trajectory_point_step: 4
+        threshold_to_consider: 0.5
+        offset_from_furthest: 20
+        use_path_orientations: false
+
+      PathFollowCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        offset_from_furthest: 5
+        threshold_to_consider: 1.4
+
+      PreferForwardCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 0.5
+
+      CorridorCritic:
+        enabled: true
+        power: 1.0
+        weight: 1.0
+        max_offset: 0.5
+
+      VolumetricCritic:
+        enabled: true
+        power: 1.0
+        weight: 2.0
+        min_clearance: 0.08
+
+      DynamicObstacleCritic:
+        enabled: true
+        power: 1.0
+        weight: 3.0
+        collision_radius: 0.6
+        time_decay: 0.5

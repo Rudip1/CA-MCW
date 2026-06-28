@@ -1,0 +1,12 @@
+# vf_controller_inference.yaml — full INFERENCE mode with ONNX model in C++.
+
+controller_server:
+  ros__parameters:
+    use_sim_time: true
+    controller_frequency: 20.0
+    FollowPath:
+      plugin: "vf_robot_controller::VFController"
+      controller_mode: "inferencewt"
+      weight_provider: "onnx"
+      onnx_model_path: "$(find-pkg-share vf_robot_controller)/../models/meta_critic.onnx"
+      feature_topic: "/vf/features"

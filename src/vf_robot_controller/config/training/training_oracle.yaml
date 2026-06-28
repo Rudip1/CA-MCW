@@ -1,0 +1,15 @@
+# training_oracle.yaml — Phase 9: MLP, oracle replay labels.
+
+dataset:
+  data_dir: "training/data"
+  use_oracle_labels: true
+  oracle_labels_dir: "training/oracle_labels"
+
+model:
+  type: mlp_baseline
+  hidden_dims: [256, 128, 64]
+  dropout: 0.1
+
+training:
+  epochs: 50
+  lr: 0.001

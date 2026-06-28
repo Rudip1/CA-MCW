@@ -1,0 +1,63 @@
+<library path="vf_critics_lib">
+  <!-- ── Phase 2: weight-injection wrappers around upstream critics ────── -->
+  <!-- Registered in namespace mppi::critics so upstream's CriticManager   -->
+  <!-- (which hardcodes the prefix "mppi::critics::" in getFullName) can   -->
+  <!-- resolve the short names used in YAML.                               -->
+  <class type="mppi::critics::WeightedConstraintCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream ConstraintCritic with VF meta-weight injection.</description>
+  </class>
+  <class type="mppi::critics::WeightedCostCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream CostCritic with VF meta-weight injection.</description>
+  </class>
+  <class type="mppi::critics::WeightedGoalCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream GoalCritic with VF meta-weight injection.</description>
+  </class>
+  <class type="mppi::critics::WeightedGoalAngleCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream GoalAngleCritic with VF meta-weight injection.</description>
+  </class>
+  <class type="mppi::critics::WeightedPathAlignCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream PathAlignCritic with VF meta-weight injection.</description>
+  </class>
+  <class type="mppi::critics::WeightedPathAngleCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream PathAngleCritic with VF meta-weight injection.</description>
+  </class>
+  <class type="mppi::critics::WeightedPathFollowCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream PathFollowCritic with VF meta-weight injection.</description>
+  </class>
+  <class type="mppi::critics::WeightedPreferForwardCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream PreferForwardCritic with VF meta-weight injection.</description>
+  </class>
+  <class type="mppi::critics::WeightedTwirlingCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream TwirlingCritic with VF meta-weight injection.</description>
+  </class>
+  <class type="mppi::critics::WeightedVelocityDeadbandCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Upstream VelocityDeadbandCritic with VF meta-weight injection.</description>
+  </class>
+
+  <!-- ── Phase 3: custom VF critics ──────────────────────────────────── -->
+  <!-- Registered under namespace mppi::critics for the same reason as the   -->
+  <!-- Phase 2 wrappers: upstream's CriticManager hardcodes that prefix in   -->
+  <!-- getFullName() (nav2_mppi_controller's critic_manager.cpp:72).         -->
+  <class type="mppi::critics::CorridorCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>GCF-aware lateral-deviation critic. Subscribes to /vf/gcf_state; degrades to zero contribution when GCF data is stale or missing.</description>
+  </class>
+  <class type="mppi::critics::VolumetricCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>3D obstacle critic. Subscribes to /vf/voxel_filtered_pointcloud; counts pointcloud hits inside trajectory footprint cylinders. Zero contribution when cloud is stale or absent.</description>
+  </class>
+  <class type="mppi::critics::DynamicObstacleCritic"
+         base_class_type="mppi::critics::CriticFunction">
+    <description>Time-decay weighted critic for moving obstacles. Maintains a ring buffer of recent costmap snapshots; scores trajectories by costmap-cell delta with exponential time decay.</description>
+  </class>
+</library>

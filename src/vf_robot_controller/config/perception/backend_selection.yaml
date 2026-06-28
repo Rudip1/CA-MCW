@@ -1,0 +1,30 @@
+# backend_selection.yaml — selects the IMapBackend used by Phase 6's
+# slam_persistent channel and the diagnostic map_backend_node.
+#
+# `backend` controls which implementation feature_extractor_node and
+# map_backend_node instantiate at startup. Switching is runtime-safe:
+# channels that rely on unsupported capabilities are zero-filled and the
+# corresponding capability flags (slots 38, 39 of slam_persistent) read
+# 0, so the meta-critic MLP knows the data is missing.
+#
+# Both nodes read the same keys; we duplicate the block under each node
+# name (ROS 2 strict-namespace param resolution).
+#
+# rtabmap_db_path defaults to the file produced by rtabmap_loc.launch.py
+# in the standard maps/<map_name>/<map_name>.db convention. If the file
+# is missing or locked at startup, RtabmapBackend reports
+# isAvailable()=false and feature_extractor_node falls through to the
+# static yaml below (graceful degradation; logged once).
+
+map_backend_node:
+  ros__parameters:
+    backend: "rtabmap"   # one of: rtabmap | static | cuvslam | none
+    rtabmap_db_path: ""  # filled in at launch time by m6 launch / user override
+    static_map_yaml: ""  # optional static .yaml for fallback
+    status_rate_hz: 1.0
+
+feature_extractor_node:
+  ros__parameters:
+    map_backend: "rtabmap"
+    rtabmap_db_path: ""
+    static_map_yaml: ""

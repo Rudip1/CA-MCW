@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>vf_robot_controller</name>
+  <version>0.2.0</version>
+  <description>
+    VF adaptive meta-critic navigation controller. Thin shim on top of
+    nav2_mppi_controller with custom critics, GCF perception, and learned
+    per-critic weight injection.
+  </description>
+  <maintainer email="pravin@example.com">Pravin</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <!-- Core ROS / Nav2 -->
+  <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>nav2_core</depend>
+  <depend>nav2_costmap_2d</depend>
+  <depend>nav2_util</depend>
+  <depend>nav2_mppi_controller</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>angles</depend>
+  <depend>pluginlib</depend>
+
+  <!-- Perception / SLAM database -->
+  <!-- <depend>pcl_ros</depend> Phase 4 -->
+  <!-- <depend>pcl_conversions</depend> Phase 4 -->
+  <!-- <depend>libpcl-all-dev</depend> Phase 4 -->
+  <depend>libsqlite3-dev</depend>
+
+  <!-- Custom messages -->
+  <depend>vf_robot_messages</depend>
+
+  <!-- Python deps for vf_controller subpackage -->
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-h5py</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <!-- <test_depend>ament_cmake_copyright</test_depend> -->
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <nav2_core plugin="${prefix}/plugins/controller_plugins.xml"/>
+    <nav2_mppi_controller plugin="${prefix}/plugins/critic_plugins.xml"/>
+  </export>
+</package>

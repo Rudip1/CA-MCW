@@ -1,0 +1,25 @@
+# training_baseline.yaml — Phase 8: MLP, hindsight-best labels.
+
+dataset:
+  data_dir: "training/data"
+  channels_config: "config/perception/channels_v1.yaml"
+  val_split: 0.15
+  batch_size: 256
+
+model:
+  type: mlp_baseline
+  hidden_dims: [256, 128, 64]
+  dropout: 0.1
+  layer_norm: true
+
+training:
+  epochs: 50
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 8
+
+losses:
+  ce_weight: 1.0
+  kl_prior_weight: 0.1
+  sparsity_weight: 0.01
