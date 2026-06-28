@@ -1,0 +1,27 @@
+# =============================================================================
+# planners/NavFn.yaml — NavFn Dijkstra / A* planner
+# =============================================================================
+# Merge fragment. Overrides planner_server in nav2_base.yaml.
+# All planner fragments use "GridBased" so the Nav2 BT XML never changes.
+#
+# WHEN TO USE
+#   Default for all experiments. Fast, reliable, generates smooth global
+#   paths on 2D occupancy grids. No kinematic constraints — works perfectly
+#   for differential-drive robots.
+#
+# KEY PARAMS
+#   use_astar: true  — A* is much faster than Dijkstra on hospital-scale maps
+#   tolerance: 0.5   — goal cell tolerance; fine-tuning done by controller
+#   allow_unknown    — hospital maps always have unexplored cells
+# =============================================================================
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: true
+      allow_unknown: true

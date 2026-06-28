@@ -1,0 +1,406 @@
+# =============================================================================
+# vf_robot_bringup / config / nav2 / nav2_base.yaml
+# =============================================================================
+# Controller-agnostic, robot-agnostic Nav2 skeleton for ROS2 Humble (Nav2 1.1.x).
+#
+# HOW THIS IS USED
+#   compose_params.py deep-merges these fragments IN ORDER at launch time:
+#
+#     1  nav2_base.yaml              ← this file (everything except the three below)
+#     2  controllers/<ctrl>.yaml     ← FollowPath: plugin block only
+#     3  planners/<planner>.yaml     ← GridBased: plugin block + planner_plugins
+#     4  localization/amcl.yaml      ← amcl: block (only when localization==amcl)
+#
+#   Then robot-profile rewrites are applied on top (footprint, frames, vel limits).
+#   Order between steps 2-4 doesn't matter — each touches a disjoint namespace.
+#   Later fragments win on any key overlap.
+#
+# WHAT LIVES HERE (everything nav2 needs except the fragments above)
+#   bt_navigator, controller_server skeleton (no FollowPath), planner_server
+#   skeleton (single NavFn default), smoother_server, behavior_server,
+#   waypoint_follower, velocity_smoother, collision_monitor, map_server,
+#   map_saver, local_costmap, global_costmap.
+#
+# WHAT IS INTENTIONALLY ABSENT
+#   FollowPath:    → controllers/<ctrl>.yaml
+#   GridBased:     → planners/<planner>.yaml  (only NavFn default kept below)
+#   amcl:          → localization/amcl.yaml
+#   use_sim_time   → injected at launch time by the launch file
+#
+# ROBOT-SPECIFIC VALUES (footprint, frame names, velocities)
+#   Robot profile rewrites override any value after the merge.
+#   Values below are safe placeholders — they must exist here (strict mode)
+#   so the robot profile can rewrite them.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Behavior Tree Navigator
+# -----------------------------------------------------------------------------
+# Loads the default Nav2 BT XML (navigate_to_pose_w_replanning_and_recovery.xml)
+# unless overridden at launch with default_nav_to_pose_bt_xml.
+bt_navigator:
+  ros__parameters:
+    global_frame: map
+    robot_base_frame: base_footprint    # rewritten by robot profile
+    odom_topic: /odom
+    bt_loop_duration: 10                # ms — main BT tick rate
+    default_server_timeout: 20          # s — Humble default; 30 was too slow
+    wait_for_service_timeout: 1000      # ms — how long to wait for action servers
+    # Custom BT XML — overrides the upstream default
+    # (navigate_to_pose_w_replanning_and_recovery.xml).
+    # Bumps number_of_retries 6→12 and removes the Wait(5s) recovery so the
+    # ProgressChecker window isn't burned by the recovery itself. The empty
+    # placeholder is REWRITTEN at launch time by bringup_launch._compose_action
+    # to the absolute path under share/vf_robot_bringup/config/nav2/bt_xml/.
+    default_nav_to_pose_bt_xml: ""
+
+    # Required in Humble 1.1.x to load the BT action/condition plugins.
+    # Each entry is a plugin class that the BT executor can instantiate.
+    plugin_lib_names:
+      - nav2_compute_path_to_pose_action_bt_node
+      - nav2_compute_path_through_poses_action_bt_node
+      - nav2_smooth_path_action_bt_node
+      - nav2_follow_path_action_bt_node
+      - nav2_spin_action_bt_node
+      - nav2_wait_action_bt_node
+      - nav2_assisted_teleop_action_bt_node
+      - nav2_back_up_action_bt_node
+      - nav2_drive_on_heading_bt_node
+      - nav2_clear_costmap_service_bt_node
+      - nav2_is_stuck_condition_bt_node
+      - nav2_goal_reached_condition_bt_node
+      - nav2_goal_updated_condition_bt_node
+      - nav2_globally_updated_goal_condition_bt_node
+      - nav2_is_path_valid_condition_bt_node
+      - nav2_initial_pose_received_condition_bt_node
+      - nav2_reinitialize_global_localization_service_bt_node
+      - nav2_rate_controller_bt_node
+      - nav2_distance_controller_bt_node
+      - nav2_speed_controller_bt_node
+      - nav2_truncate_path_action_bt_node
+      - nav2_truncate_path_local_action_bt_node
+      - nav2_goal_updater_node_bt_node
+      - nav2_recovery_node_bt_node
+      - nav2_pipeline_sequence_bt_node
+      - nav2_round_robin_node_bt_node
+      - nav2_transform_available_condition_bt_node
+      - nav2_time_expired_condition_bt_node
+      - nav2_path_expiring_timer_condition
+      - nav2_distance_traveled_condition_bt_node
+      - nav2_single_trigger_bt_node
+      - nav2_goal_updated_controller_bt_node
+      - nav2_is_battery_low_condition_bt_node
+      - nav2_navigate_through_poses_action_bt_node
+      - nav2_navigate_to_pose_action_bt_node
+      - nav2_remove_passed_goals_action_bt_node
+      - nav2_planner_selector_bt_node
+      - nav2_controller_selector_bt_node
+      - nav2_goal_checker_selector_bt_node
+      - nav2_controller_cancel_bt_node
+      - nav2_path_longer_on_approach_bt_node
+      - nav2_wait_cancel_bt_node
+      - nav2_spin_cancel_bt_node
+      - nav2_back_up_cancel_bt_node
+      - nav2_assisted_teleop_cancel_bt_node
+      - nav2_drive_on_heading_cancel_bt_node
+      - nav2_is_battery_charging_condition_bt_node
+
+# Humble Nav2 creates two internal rclcpp nodes for BT sub-executors.
+bt_navigator_navigate_through_poses_rclcpp_node:
+  ros__parameters: {}
+
+bt_navigator_navigate_to_pose_rclcpp_node:
+  ros__parameters: {}
+
+
+# -----------------------------------------------------------------------------
+# Controller Server
+# -----------------------------------------------------------------------------
+# NOTE: The FollowPath: block is intentionally absent — injected at compose
+# time from controllers/<ctrl>.yaml.
+controller_server:
+  ros__parameters:
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.5      # high — diff-drive has no lateral motion
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3             # s — retries before BT recovery kicks in
+
+    # IMPORTANT: Humble 1.1.x uses the SINGULAR form here (not "plugins").
+    # The plural form is silently ignored and the progress checker gets no params.
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["general_goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      # Loosened from TB3 defaults (0.5 m / 10 s) for the slower ViroFighter
+      # threading clutter. With vx_max ≈ 0.30 m/s the robot routinely averages
+      # < 0.05 m/s while squeezing past obstacles, so the original window
+      # mis-classified careful navigation as "stuck" and snowballed recoveries
+      # into the BT abort cap.
+      required_movement_radius: 0.1    # m — must move this far within time below
+      movement_time_allowance: 30.0    # s — else "stuck" declared and BT recovers
+
+    general_goal_checker:
+      stateful: true
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.10          # m — single source of truth.
+                                       # data_collector_node's goal_radius_m
+                                       # mirrors this in both manual + batch
+                                       # launches; keep them in sync.
+      yaw_goal_tolerance: 0.25         # rad — rewritten by robot profile
+
+    # FollowPath: is injected by controllers/<ctrl>.yaml.
+    # It MUST define at least: plugin: "<fully::qualified::PluginName>"
+
+
+# -----------------------------------------------------------------------------
+# Planner Server
+# -----------------------------------------------------------------------------
+# Default: NavFn/A*. Overridden wholesale by planners/<planner>.yaml fragment
+# which replaces planner_plugins and the GridBased: block.
+# All planner fragments use "GridBased" as the canonical plugin instance name
+# so the Nav2 BT XML never needs to change between planner choices.
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+
+    # GridBased: is overridden by planners/<planner>.yaml. This default (NavFn)
+    # activates when no planner fragment is merged (should not happen in practice).
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: true                  # A* faster than Dijkstra on hospital maps
+      allow_unknown: true              # hospital maps have unexplored cells
+
+
+# -----------------------------------------------------------------------------
+# Smoother Server
+# -----------------------------------------------------------------------------
+smoother_server:
+  ros__parameters:
+    smoother_plugins: ["simple_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      max_its: 1000
+      do_refinement: true
+
+
+# -----------------------------------------------------------------------------
+# Behavior Server  (recovery behaviors)
+# -----------------------------------------------------------------------------
+# Note: "spin", "backup", "drive_on_heading" all write directly to /cmd_vel
+# bypassing controller_server and the hard safety shell entirely.
+behavior_server:
+  ros__parameters:
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+    drive_on_heading:
+      plugin: "nav2_behaviors/DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors/Wait"
+    assisted_teleop:
+      plugin: "nav2_behaviors/AssistedTeleop"
+    global_frame: odom
+    robot_base_frame: base_footprint   # rewritten by robot profile
+    transform_tolerance: 0.1
+    simulate_ahead_time: 2.0
+    max_rotational_vel: 1.0            # rad/s — conservative for heavy robot
+    min_rotational_vel: 0.4
+    rotational_acc_lim: 3.2
+
+
+# -----------------------------------------------------------------------------
+# Waypoint Follower
+# -----------------------------------------------------------------------------
+waypoint_follower:
+  ros__parameters:
+    loop_rate: 20
+    stop_on_failure: false
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: true
+      waypoint_pause_duration: 200     # ms — pause at each waypoint
+
+
+# -----------------------------------------------------------------------------
+# Velocity Smoother
+# -----------------------------------------------------------------------------
+# Smooths raw cmd_vel from controller_server before it reaches collision_monitor.
+# Topic wiring (set in navigation_launch.py):
+#   input:  cmd_vel          (from controller_server)
+#   output: cmd_vel_smoothed (to collision_monitor)
+# All velocity limits below are OVERRIDDEN by the robot profile.
+velocity_smoother:
+  ros__parameters:
+    smoothing_frequency: 20.0
+    scale_velocities: false
+    feedback: "OPEN_LOOP"
+    max_velocity: [0.26, 0.0, 1.0]    # [vx, vy, wz] — placeholder, see above
+    min_velocity: [-0.26, 0.0, -1.0]
+    max_accel:    [2.5, 0.0, 3.2]
+    max_decel:    [-2.5, 0.0, -3.2]
+    odom_topic: "odom"
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0
+
+
+# -----------------------------------------------------------------------------
+# Collision Monitor
+# -----------------------------------------------------------------------------
+# Safety layer: stops or slows the robot if a collision is predicted within
+# time_before_collision seconds. Sits between velocity_smoother and the robot.
+# Topic wiring:
+#   input:  cmd_vel_smoothed (from velocity_smoother)
+#   output: cmd_vel          (to robot base controller)
+collision_monitor:
+  ros__parameters:
+    base_frame_id: "base_footprint"    # rewritten by robot profile
+    odom_frame_id: "odom"
+    cmd_vel_in_topic: "cmd_vel_smoothed"
+    cmd_vel_out_topic: "cmd_vel"
+    state_topic: "collision_monitor_state"
+    transform_tolerance: 0.2
+    source_timeout: 1.0
+    base_shift_correction: true
+    stop_pub_timeout: 2.0
+    polygons: ["FootprintApproach"]
+    FootprintApproach:
+      type: "polygon"
+      action_type: "approach"
+      footprint_topic: "/local_costmap/published_footprint"
+      time_before_collision: 1.5       # s — rewritten by robot profile
+      simulation_time_step: 0.1
+      min_points: 6
+      visualize: false
+      enabled: true
+    observation_sources: ["scan"]
+    scan:
+      type: "scan"
+      topic: "scan"
+      min_height: 0.15
+      max_height: 2.0
+      enabled: true
+
+
+# -----------------------------------------------------------------------------
+# Map Server  (AMCL mode only)
+# -----------------------------------------------------------------------------
+# yaml_filename is set at launch time by localization_launch.py from map:=.
+# Leaving it blank here is intentional — Nav2 will fail loudly if AMCL
+# mode is used without providing a map, which is the correct behaviour.
+map_server:
+  ros__parameters:
+    yaml_filename: ""
+
+map_saver:
+  ros__parameters:
+    save_map_timeout: 5.0
+    free_thresh_default: 0.25
+    occupied_thresh_default: 0.65
+    map_subscribe_transient_local: true
+
+
+# -----------------------------------------------------------------------------
+# Local Costmap  (rolling window around robot)
+# -----------------------------------------------------------------------------
+# Shape: 3 m × 3 m by default (TB3-class). ViroFighter profile expands to 4 m × 4 m.
+# Layers: voxel (3D depth-to-scan) + inflation.
+# Robot footprint: robot_radius placeholder is overridden by robot profile.
+#   ViroFighter: polygon footprint [[0.1,0.2],[0.1,-0.2],[-0.5,-0.2],[-0.5,0.2]]
+#   TurtleBot3:  robot_radius 0.22 m (round robot)
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: odom
+      robot_base_frame: base_footprint  # rewritten by robot profile
+      rolling_window: true
+      width: 3
+      height: 3
+      resolution: 0.05                  # m/cell — 5 cm cells
+      robot_radius: 0.22                # m — placeholder; VF uses polygon footprint
+      footprint: ""                     # empty = use robot_radius; VF profile sets polygon
+      plugins: ["voxel_layer", "inflation_layer"]
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55          # m — rewritten by robot profile
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: true
+        publish_voxel_map: true
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0        # m — matches ViroFighter UVC tube height
+        mark_threshold: 0
+        observation_sources: scan
+        scan:
+          topic: /scan                  # absolute topic — depth_to_scan publishes here
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0       # m — rewritten by robot profile per sensor range
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+      always_send_full_costmap: true
+
+
+# -----------------------------------------------------------------------------
+# Global Costmap  (full map-sized grid)
+# -----------------------------------------------------------------------------
+# Updated at 1 Hz (static environments change slowly).
+# Inflation settings intentionally kept symmetric with local costmap.
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_footprint  # rewritten by robot profile
+      robot_radius: 0.22                # placeholder — see local_costmap note
+      footprint: ""                     # placeholder — VF profile sets polygon
+      resolution: 0.05
+      track_unknown_space: true
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0       # m — rewritten by robot profile
+          raytrace_min_range: 0.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 0.0
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.55          # m — rewritten by robot profile
+      always_send_full_costmap: true

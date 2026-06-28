@@ -1,0 +1,282 @@
+# =============================================================================
+# vf_robot_bringup / config / robots / virofighter.yaml
+# =============================================================================
+# Robot profile for the ViroFighter UVC-1 disinfection robot.
+#
+# This file is NOT loaded by Nav2 directly. It is a rewrite table applied
+# by vf_robot_bringup/launch_utils/compose_params.py on top of the merged
+# (nav2_base.yaml ⊕ controllers/<choice>.yaml [⊕ localization/amcl.yaml])
+# file at launch time.
+#
+# FORMAT:
+#   robot:     informational metadata for humans (ignored by the composer)
+#   rewrites:  flat dict of {dotted.key.path: value}
+#              The composer applies each rewrite in strict mode: if any
+#              key path does not already exist in the merged Nav2 params,
+#              the launch fails with a "did you mean ...?" suggestion.
+#
+# SOURCES OF TRUTH (cross-checked against URDF & existing config):
+#   - wheel_separation / base_footprint:
+#       vf_robot_description/urdf/xacro/uvc1_virofighter.xacro
+#       (libgazebo_ros_diff_drive.so plugin block, ~line 296)
+#   - footprint polygon:
+#       vf_robot_bringup/README.md (tuning section)
+#       cross-checked against wheel_front_{left,right}_joint origins
+#       (y = ±0.17827) and wrist_rear_{left,right}_joint origin (x = -0.47)
+#   - velocity limits:
+#       vf_robot_bringup/README.md (policy decision: UVC robot, not racing)
+#   - depth camera topics:
+#       vf_robot_description/urdf/xacro/sensors.xacro
+#       (d455_depth_camera_controller + d435i_depth_camera_controller)
+#   - /scan topic:
+#       vf_robot_slam/launch/depth_to_scan.launch.py (published as /scan)
+# =============================================================================
+
+robot:
+  name: ViroFighter UVC-1
+  description: >-
+    Tall differential-drive UVC disinfection robot with dual RealSense
+    cameras (D455 rear-facing, D435i top-mounted down-tilted) and a
+    non-centered base_link origin (chassis extends backward from base_link).
+  base_frame: base_footprint
+  odom_frame: odom
+  map_frame: map
+  chassis_length_m: 0.6
+  chassis_width_m: 0.4
+  height_max_m: 1.9
+  wheel_separation_m: 0.356
+  wheel_diameter_m: 0.165
+  drive_type: differential
+  has_3d_sensor: true
+  primary_depth_camera: d455
+  scan_source: depth_to_scan  # from vf_robot_slam
+
+# =============================================================================
+# REWRITES — the part the composer actually applies
+# =============================================================================
+#
+# These are applied on top of the merged Nav2 params (nav2_base.yaml +
+# the chosen controller fragment + optional AMCL fragment) in strict mode.
+#
+# Each key path MUST already exist in the merged file. If you want to add
+# a brand-new key, you must either (a) add it to nav2_base.yaml first, or
+# (b) set strict=False in the launch file's compose() call.
+#
+# Grouped by node for readability.
+# =============================================================================
+rewrites:
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Frames — the same `base_footprint` repeated in many places
+  # ───────────────────────────────────────────────────────────────────────────
+  bt_navigator.ros__parameters.robot_base_frame:            base_footprint
+  behavior_server.ros__parameters.robot_base_frame:         base_footprint
+  local_costmap.local_costmap.ros__parameters.robot_base_frame:   base_footprint
+  global_costmap.global_costmap.ros__parameters.robot_base_frame: base_footprint
+  collision_monitor.ros__parameters.base_frame_id:          base_footprint
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Footprint — polygon form (X extends forward, Y extends left)
+  # Format: a YAML string containing a list-of-lists, exactly as Nav2
+  # expects. The base_link origin sits near the FRONT of the chassis:
+  #   x ∈ [-0.5, +0.1] (0.6 m long, most of it behind the origin)
+  #   y ∈ [-0.2, +0.2] (0.4 m wide, symmetric)
+  # ───────────────────────────────────────────────────────────────────────────
+  local_costmap.local_costmap.ros__parameters.footprint:  "[[0.1, 0.2], [0.1, -0.2], [-0.5, -0.2], [-0.5, 0.2]]"
+  global_costmap.global_costmap.ros__parameters.footprint: "[[0.1, 0.2], [0.1, -0.2], [-0.5, -0.2], [-0.5, 0.2]]"
+
+  # NOTE: nav2_base.yaml sets `robot_radius: 0.22` as a fallback for
+  # round-robot configs. When `footprint:` is also set (as above), Nav2
+  # uses the polygon and ignores the radius. Leaving robot_radius alone
+  # is fine — do not try to "unset" it.
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Local costmap — size matches a 4m×4m sensing window suitable for the
+  # 6 m depth range of the D455
+  # ───────────────────────────────────────────────────────────────────────────
+  local_costmap.local_costmap.ros__parameters.width:  4
+  local_costmap.local_costmap.ros__parameters.height: 4
+  local_costmap.local_costmap.ros__parameters.inflation_layer.inflation_radius: 0.55
+  local_costmap.local_costmap.ros__parameters.inflation_layer.cost_scaling_factor: 3.0
+
+  # Voxel layer scan ranges — match D455 point cloud cutoff (0.6–6.0 m)
+  local_costmap.local_costmap.ros__parameters.voxel_layer.scan.obstacle_max_range: 5.0
+  local_costmap.local_costmap.ros__parameters.voxel_layer.scan.raytrace_max_range: 6.0
+  local_costmap.local_costmap.ros__parameters.voxel_layer.max_obstacle_height: 2.0
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Global costmap — inflation matches local for consistency
+  # ───────────────────────────────────────────────────────────────────────────
+  global_costmap.global_costmap.ros__parameters.inflation_layer.inflation_radius: 0.55
+  global_costmap.global_costmap.ros__parameters.inflation_layer.cost_scaling_factor: 3.0
+  global_costmap.global_costmap.ros__parameters.obstacle_layer.scan.obstacle_max_range: 5.0
+  global_costmap.global_costmap.ros__parameters.obstacle_layer.scan.raytrace_max_range: 6.0
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Velocity smoother — ViroFighter velocity policy (UVC robot, not racing)
+  # Format is [vx, vy, wz]. Diff-drive → vy is always 0.
+  # ───────────────────────────────────────────────────────────────────────────
+  velocity_smoother.ros__parameters.max_velocity: [0.30, 0.0, 1.0]
+  velocity_smoother.ros__parameters.min_velocity: [-0.30, 0.0, -1.0]
+  velocity_smoother.ros__parameters.max_accel:    [0.5,  0.0, 1.5]
+  velocity_smoother.ros__parameters.max_decel:    [-0.5, 0.0, -1.5]
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Collision monitor — same footprint-approach polygon works; just needs
+  # to know where to publish status (using defaults from nav2_base.yaml)
+  # ───────────────────────────────────────────────────────────────────────────
+  collision_monitor.ros__parameters.FootprintApproach.time_before_collision: 1.5
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # AMCL — only used when localization == "amcl", but the rewrites apply
+  # harmlessly in any mode because the amcl: block is either present (AMCL
+  # mode) or absent (in which case the strict composer will REJECT these
+  # paths in non-AMCL runs). To avoid that, these rewrites are NOT listed
+  # here — AMCL params live entirely in config/nav2/localization/amcl.yaml,
+  # which already uses base_footprint.
+  # ───────────────────────────────────────────────────────────────────────────
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Goal checker tolerance — relaxed for a large robot in tight spaces
+  # ───────────────────────────────────────────────────────────────────────────
+  controller_server.ros__parameters.general_goal_checker.xy_goal_tolerance:  0.30
+  controller_server.ros__parameters.general_goal_checker.yaw_goal_tolerance: 0.50
+
+
+# =============================================================================
+# CONTROLLER-FAMILY-SPECIFIC OVERRIDES
+# =============================================================================
+# These are applied IN ADDITION to the `rewrites:` block above, but ONLY
+# when the chosen controller belongs to the matching family.
+#
+# The launch file passes the family name to load_robot_profile() based on
+# which controller fragment was selected:
+#
+#     vf_fixedwt.yaml      → family "vf"
+#     vf_inferencewt.yaml  → family "vf"
+#     vf_imitationwt.yaml  → family "imitationwt"
+#     mppi.yaml            → family "mppi"
+#     dwb.yaml             → family "dwb"
+#     rpp.yaml             → family "rpp"
+#     graceful.yaml        → family "graceful"
+#
+# This split exists because each controller plugin uses different parameter
+# names for the same physical concept:
+#
+#   physical concept    | VF plugin       | nav2_mppi       | dwb_core
+#   --------------------|-----------------|-----------------|-------------
+#   max forward speed   | vx_max          | vx_max          | max_vel_x
+#   max angular speed   | wz_max          | wz_max          | max_vel_theta
+#   max accel           | ax_max          | ax_max          | acc_lim_x
+#
+# In strict-mode composition, a rewrite key must exist in the merged file.
+# Since each controller fragment only declares its own param names, putting
+# all of them in the always-applied `rewrites:` block would fail strict
+# validation for the wrong controller.
+# =============================================================================
+controller_overrides:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # VF Robot Controller (any vf_* fragment)
+  # ──────────────────────────────────────────────────────────────────────────
+  vf:
+    # Robot dimensions (used by GCF and safety critics)
+    controller_server.ros__parameters.FollowPath.robot_length:     0.60
+    controller_server.ros__parameters.FollowPath.robot_width:      0.40
+    controller_server.ros__parameters.FollowPath.robot_height_min: 0.05
+    controller_server.ros__parameters.FollowPath.robot_height_max: 1.90
+
+    # Velocity limits (must match velocity_smoother.max_velocity above)
+    # VF plugin uses MPPI-style param names: vx_max, wz_max, ax_max, ax_min, az_max
+    controller_server.ros__parameters.FollowPath.vx_max:  0.30
+    controller_server.ros__parameters.FollowPath.vx_min: -0.20
+    controller_server.ros__parameters.FollowPath.wz_max:  1.0
+    controller_server.ros__parameters.FollowPath.ax_max:  0.5
+    controller_server.ros__parameters.FollowPath.ax_min: -0.5
+    controller_server.ros__parameters.FollowPath.az_max:  1.5
+
+    # 3D sensor wiring — pointcloud_topic is hardcoded in C++ (not a ROS param)
+    controller_server.ros__parameters.FollowPath.use_3d_clearance: true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Stock Nav2 MPPI controller
+  # ──────────────────────────────────────────────────────────────────────────
+  mppi:
+    # Velocity limits — note the different key names from VF
+    controller_server.ros__parameters.FollowPath.vx_max:  0.30
+    controller_server.ros__parameters.FollowPath.vx_min: -0.20
+    controller_server.ros__parameters.FollowPath.wz_max:  1.0
+
+    # Acceleration limits — also different naming
+    controller_server.ros__parameters.FollowPath.ax_max:  0.5
+    controller_server.ros__parameters.FollowPath.ax_min: -0.5
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Stock Nav2 DWB controller (Dynamic Window Approach)
+  # ──────────────────────────────────────────────────────────────────────────
+  dwb:
+    # Velocity limits — DWB uses the same key names as the VF plugin
+    # but they live in a different plugin namespace
+    controller_server.ros__parameters.FollowPath.max_vel_x:    0.30
+    controller_server.ros__parameters.FollowPath.min_vel_x:    0.0
+    controller_server.ros__parameters.FollowPath.max_vel_theta: 1.0
+    controller_server.ros__parameters.FollowPath.max_speed_xy: 0.30
+
+    # Acceleration limits (DWB allows much higher than VF — these are
+    # the wheel-level limits, the velocity_smoother caps the actual output)
+    controller_server.ros__parameters.FollowPath.acc_lim_x:     0.5
+    controller_server.ros__parameters.FollowPath.acc_lim_theta: 1.5
+    controller_server.ros__parameters.FollowPath.decel_lim_x:     -0.5
+    controller_server.ros__parameters.FollowPath.decel_lim_theta: -1.5
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Regulated Pure Pursuit controller
+  # ──────────────────────────────────────────────────────────────────────────
+  rpp:
+    # desired_linear_vel drives the carrot; keep consistent with smoother cap
+    controller_server.ros__parameters.FollowPath.desired_linear_vel:            0.30
+    controller_server.ros__parameters.FollowPath.rotate_to_heading_angular_vel: 1.0
+    controller_server.ros__parameters.FollowPath.max_angular_accel:             1.5
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Graceful Motion Controller
+  # ──────────────────────────────────────────────────────────────────────────
+  graceful:
+    controller_server.ros__parameters.FollowPath.v_linear_max:  0.30
+    controller_server.ros__parameters.FollowPath.v_linear_min:  0.05
+    controller_server.ros__parameters.FollowPath.v_angular_max: 1.0
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # VF Robot Controller — IMITATION-WEIGHTS mode
+  # ──────────────────────────────────────────────────────────────────────────
+  # vf_imitationwt.yaml only declares plugin + controller_mode (no MPPI params).
+  # Applying the vf-family velocity/footprint rewrites would fail strict
+  # composition. Empty block by design.
+  imitationwt: {}
+
+
+# =============================================================================
+# PLANNER-FAMILY-SPECIFIC OVERRIDES
+# =============================================================================
+# Applied IN ADDITION to `rewrites:` but ONLY when the chosen planner matches.
+# Each key must exist in the merged planner fragment (planner_server section).
+#
+# Why split from `rewrites:`:  strict composition fails if a rewrite key does
+# not exist in the merged file — and planner_server.GridBased.minimum_turning_radius
+# only exists when SmacPlannerHybrid fragment was merged.
+# =============================================================================
+planner_overrides:
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # SMAC Hybrid-A* — ViroFighter is diff-drive so 0.05 m turning radius is fine
+  # (0.20 m default is aimed at car-like Ackermann robots)
+  # ────────────────────────────────────────────────────────────────────────────
+  SmacPlannerHybrid:
+    planner_server.ros__parameters.GridBased.minimum_turning_radius: 0.05
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # SMAC State Lattice — penalise reverse heavily in hospital/office corridors
+  # where a reversing robot is dangerous and disruptive
+  # ────────────────────────────────────────────────────────────────────────────
+  SmacLattice:
+    planner_server.ros__parameters.GridBased.reverse_penalty: 5.0

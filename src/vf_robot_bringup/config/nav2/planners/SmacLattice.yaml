@@ -1,0 +1,39 @@
+# =============================================================================
+# planners/SmacLattice.yaml — SMAC State Lattice planner
+# =============================================================================
+# Merge fragment. Overrides planner_server in nav2_base.yaml.
+#
+# WHEN TO USE
+#   Generates kinematically feasible paths using precomputed motion primitives
+#   (lattice graph). More expressive than Hybrid-A* — supports forward,
+#   backward, and in-place rotation via the diff primitive set.
+#   Slowest planner; use for experiments where path expressiveness matters.
+#
+# KEY PARAMS
+#   lattice_filepath  — diff primitives at 5 cm resolution, 0.5 m turn radius.
+#                       Matches costmap resolution (0.05 m).
+#   reverse_penalty   — higher = rarely plans backwards (good for hospital)
+#                       overridden by virofighter.yaml planner_overrides → 5.0
+#   smooth_path       — smooths the lattice graph output
+# =============================================================================
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_smac_planner/SmacPlannerLattice"
+      tolerance: 0.5
+      allow_unknown: true
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 3.5
+      lattice_filepath: "/opt/ros/humble/share/nav2_smac_planner/sample_primitives/5cm_resolution/0.5m_turning_radius/diff/output.json"
+      reverse_penalty: 2.0            # overridden by virofighter.yaml planner_overrides → 5.0
+      change_penalty: 0.05
+      non_straight_penalty: 1.05
+      cost_penalty: 2.0
+      retrospective_penalty: 0.015
+      analytic_expansion_ratio: 3.5
+      smooth_path: true

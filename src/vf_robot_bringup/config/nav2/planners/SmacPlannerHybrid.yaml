@@ -1,0 +1,43 @@
+# =============================================================================
+# planners/SmacPlannerHybrid.yaml — SMAC Hybrid-A* (SE2) planner
+# =============================================================================
+# Merge fragment. Overrides planner_server in nav2_base.yaml.
+#
+# WHEN TO USE
+#   When you need kinematically feasible SE2 paths (x, y, heading).
+#   Designed for Ackermann/car-like robots but usable on diff-drive with a
+#   small minimum_turning_radius (overridden by virofighter.yaml P4 → 0.05 m).
+#   Slower than NavFn / SmacPlanner2D; use for experiments requiring SE2 paths.
+#
+# KEY PARAMS
+#   motion_model: "DUBIN"         — forward-only arcs (no reverse in path)
+#   minimum_turning_radius: 0.20  — overridden by virofighter.yaml → 0.05 m
+#   angle_quantization_bins: 72   — 5° heading resolution (360°/72)
+#   smooth_path: true             — post-processes path for continuity
+# =============================================================================
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_smac_planner/SmacPlannerHybrid"
+      tolerance: 0.5
+      downsample_costmap: false
+      allow_unknown: true
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 3.5
+      motion_model_for_search: "DUBIN"
+      angle_quantization_bins: 72
+      minimum_turning_radius: 0.20    # overridden by virofighter.yaml planner_overrides → 0.05
+      reverse_penalty: 2.0
+      change_penalty: 0.0
+      non_straight_penalty: 1.2
+      cost_penalty: 2.0
+      retrospective_penalty: 0.015
+      analytic_expansion_ratio: 3.5
+      smooth_path: true
+      use_quadratic_approximation: false
+      use_final_approach_orientation: false

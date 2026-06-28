@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>vf_robot_bringup</name>
+  <version>0.1.0</version>
+  <description>
+    ViroFighter UVC-1 Robot — Bringup package.
+
+    Single entry point for all Nav2 navigation modes. Orchestrates:
+      - 4 SLAM/localization modes: rtabmap_slam, rtabmap_loc, amcl, slam_toolbox
+      - 6 controller plugins: vf_fixed, vf_inference, vf_collect, vf_passive,
+        stock Nav2 MPPI, stock Nav2 DWB
+      - Multiple robot profiles (ViroFighter UVC-1, TurtleBot3 Waffle)
+    via a launch-time YAML composer (vf_robot_bringup.launch_utils.compose_params).
+
+    Depends on vf_robot_slam for SLAM launches and depth_to_scan, and on
+    vf_robot_controller for the custom meta-critic plugin.
+  </description>
+  <maintainer email="olipravin18@gmail.com">Pravin Oli</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- Build -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <!-- Workspace packages -->
+  <depend>vf_robot_description</depend>
+  <depend>vf_robot_slam</depend>
+  <depend>vf_robot_controller</depend>
+
+  <!-- Nav2 stack (all required) -->
+  <exec_depend>nav2_bt_navigator</exec_depend>
+  <exec_depend>nav2_controller</exec_depend>
+  <exec_depend>nav2_planner</exec_depend>
+  <exec_depend>nav2_smoother</exec_depend>
+  <exec_depend>nav2_behaviors</exec_depend>
+  <exec_depend>nav2_map_server</exec_depend>
+  <exec_depend>nav2_amcl</exec_depend>
+  <exec_depend>nav2_lifecycle_manager</exec_depend>
+  <exec_depend>nav2_velocity_smoother</exec_depend>
+  <exec_depend>nav2_waypoint_follower</exec_depend>
+  <exec_depend>nav2_collision_monitor</exec_depend>
+  <exec_depend>nav2_navfn_planner</exec_depend>
+
+  <!-- Nav2 controller plugins (available as baseline choices) -->
+  <exec_depend>nav2_mppi_controller</exec_depend>
+  <exec_depend>nav2_dwb_controller</exec_depend>
+
+  <!-- SLAM Toolbox (for localization:=slam_toolbox) -->
+  <exec_depend>slam_toolbox</exec_depend>
+
+  <!-- Core ROS 2 -->
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <!-- Python — used by launch_utils/compose_params.py -->
+  <exec_depend>python3-yaml</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

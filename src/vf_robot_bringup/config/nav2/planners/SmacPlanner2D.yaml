@@ -1,0 +1,31 @@
+# =============================================================================
+# planners/SmacPlanner2D.yaml — SMAC 2D grid planner
+# =============================================================================
+# Merge fragment. Overrides planner_server in nav2_base.yaml.
+#
+# WHEN TO USE
+#   When you want a 2D grid search with smoother paths than NavFn, especially
+#   in narrow corridors. Uses analytic expansion for final approach.
+#   Still kinematic-constraint-free → good for diff-drive robots.
+#   Slower than NavFn; use NavFn unless path quality is insufficient.
+#
+# KEY PARAMS
+#   max_planning_time: 2.0   — hard budget; plan fails loudly if exceeded
+#   cost_travel_multiplier   — higher = more obstacle-averse path
+# =============================================================================
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_smac_planner/SmacPlanner2D"
+      tolerance: 0.5
+      downsample_costmap: false
+      allow_unknown: true
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 2.0
+      cost_travel_multiplier: 2.0
+      use_final_approach_orientation: false

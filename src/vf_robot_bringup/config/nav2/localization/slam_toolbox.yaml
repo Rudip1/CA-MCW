@@ -1,0 +1,117 @@
+# =============================================================================
+# vf_robot_bringup / config / nav2 / localization / slam_toolbox.yaml
+# =============================================================================
+# SLAM Toolbox localization fragment.
+#
+# This file is loaded ONLY when bringup_launch.py is invoked with
+# `localization:=slam_toolbox`. SLAM Toolbox builds a 2D occupancy grid
+# from /scan and publishes /map + map→odom TF.
+#
+# WHY THIS FRAGMENT EXISTS (parallels amcl.yaml):
+#   SLAM Toolbox is a Nav2-style ROS 2 node that reads parameters from a
+#   standard Nav2 yaml file. By providing a fragment here, SLAM Toolbox
+#   becomes tunable per-robot via the same composer mechanism that
+#   handles AMCL — instead of running on hardcoded library defaults.
+#
+# WHO STARTS SLAM TOOLBOX:
+#   vf_robot_bringup/launch/slam_launch.py
+#   It is started under nav2_lifecycle_manager and reads its parameters
+#   from the composed /tmp/nav2_*.yaml file produced by compose_params.py.
+#
+# REQUIRED EXTERNAL INPUT:
+#   - /scan topic (provided by vf_robot_slam/depth_to_scan)
+#   - odom→base_footprint transform (provided by Gazebo or robot driver)
+#
+# WHAT SLAM TOOLBOX PUBLISHES:
+#   - /map  (nav_msgs/OccupancyGrid, latched)
+#   - map→odom transform (~10 Hz, after first scan match)
+#   - /slam_toolbox/scan_visualization (visualization)
+#   - /slam_toolbox/graph_visualization (pose graph)
+#
+# MERGE CONTRACT:
+#   Fragment. Composed on top of nav2_base.yaml ⊕ controllers/<choice>.yaml
+#   when localization == "slam_toolbox".
+#
+# Defaults below are tuned for an indoor robot with a depth-camera-derived
+# 2D scan (~6 m range), 0.05 m occupancy resolution, online async mapping.
+# Robot profiles can override per-robot specifics (max_laser_range, frames)
+# via their `rewrites:` block.
+# =============================================================================
+
+slam_toolbox:
+  ros__parameters:
+
+    # ── Solver ──────────────────────────────────────────────────────────
+    solver_plugin: "solver_plugins::CeresSolver"
+    ceres_linear_solver: "SPARSE_NORMAL_CHOLESKY"
+    ceres_preconditioner: "SCHUR_JACOBI"
+    ceres_trust_strategy: "LEVENBERG_MARQUARDT"
+    ceres_dogleg_type: "TRADITIONAL_DOGLEG"
+    ceres_loss_function: "None"
+
+    # ── Mode ────────────────────────────────────────────────────────────
+    # mode: "mapping"     → build a new map
+    # mode: "localization" → load an existing serialized map
+    mode: "mapping"
+
+    # ── Frames ──────────────────────────────────────────────────────────
+    # Overridden by robot profile if needed
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_footprint
+    scan_topic: /scan
+    use_map_saver: true
+
+    # ── Scan / map resolution ──────────────────────────────────────────
+    resolution: 0.05
+    min_laser_range: 0.0
+    max_laser_range: 6.0           # match D455 effective range
+    minimum_time_interval: 0.5
+    transform_publish_period: 0.05  # 20 Hz map→odom TF
+    map_update_interval: 5.0        # seconds between map publishes
+    transform_timeout: 0.2
+    tf_buffer_duration: 30.0
+    stack_size_to_use: 40000000
+
+    # ── Pose graph constraints ─────────────────────────────────────────
+    enable_interactive_mode: false
+    debug_logging: false
+    throttle_scans: 1
+    publish_period: 0.02
+    map_file_name: ""               # set at runtime if loading a serialized map
+    map_start_pose: [0.0, 0.0, 0.0]
+    map_start_at_dock: false
+
+    # ── Scan matcher (correlation-based) ───────────────────────────────
+    use_scan_matching: true
+    use_scan_barycenter: true
+    minimum_travel_distance: 0.5    # m — only add a node if robot moved this much
+    minimum_travel_heading: 0.5     # rad
+    scan_buffer_size: 10
+    scan_buffer_maximum_scan_distance: 10.0
+    link_match_minimum_response_fine: 0.1
+    link_scan_maximum_distance: 1.5
+    loop_search_maximum_distance: 3.0
+    do_loop_closing: true
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    loop_match_minimum_response_fine: 0.45
+
+    # ── Correlation parameters ─────────────────────────────────────────
+    correlation_search_space_dimension: 0.5
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+
+    # ── Scan matcher (proper) ──────────────────────────────────────────
+    distance_variance_penalty: 0.5
+    angle_variance_penalty: 1.0
+    fine_search_angle_offset: 0.00349
+    coarse_search_angle_offset: 0.349
+    coarse_angle_resolution: 0.0349
+    minimum_angle_penalty: 0.9
+    minimum_distance_penalty: 0.5
+    use_response_expansion: true

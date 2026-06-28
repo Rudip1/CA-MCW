@@ -1,0 +1,28 @@
+# =============================================================================
+# planners/ThetaStar.yaml — Theta* any-angle planner
+# =============================================================================
+# Merge fragment. Overrides planner_server in nav2_base.yaml.
+#
+# WHEN TO USE
+#   When you want straight-line shortcuts that bypass grid alignment.
+#   Theta* produces shorter, more natural-looking paths than NavFn/A* by
+#   allowing edges between any two visible cells (line-of-sight check).
+#   Good for open areas; NavFn is usually sufficient for cluttered environments.
+#
+# KEY PARAMS
+#   how_many_corners: 8  — 8-connected grid (diagonal moves allowed)
+#   w_euc_cost          — weight on Euclidean distance heuristic
+#   w_traversal_cost    — weight on costmap traversal cost
+# =============================================================================
+
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_theta_star_planner/ThetaStarPlanner"
+      how_many_corners: 8
+      w_euc_cost: 1.0
+      w_traversal_cost: 2.0
+      use_final_approach_orientation: false

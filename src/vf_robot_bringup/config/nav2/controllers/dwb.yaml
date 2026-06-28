@@ -1,0 +1,100 @@
+# =============================================================================
+# vf_robot_bringup / config / nav2 / controllers / dwb.yaml
+# =============================================================================
+# Stock Nav2 DWB Controller — secondary thesis baseline
+#
+# Dynamic Window Approach: samples velocity candidates within the dynamic
+# window (set of velocities reachable from the current state within
+# acceleration limits) and scores each one with a weighted critic sum.
+#
+# WHY THIS IS A SECONDARY BASELINE (not primary):
+#   DWB is a different algorithm family from MPPI — it samples velocities,
+#   not trajectories. Comparing the VF Robot Controller (an MPPI variant)
+#   to DWB conflates two effects: (1) MPPI vs DWA, and (2) our custom
+#   critic set + meta-network vs stock critics. The primary baseline
+#   should be stock Nav2 MPPI (mppi.yaml). DWB serves as a useful "we
+#   beat the Nav2 default" sanity check but does not isolate the
+#   thesis contribution.
+#
+# DWB CRITIC SET (7 critics):
+#   - RotateToGoal       rotates to face the goal at the end of the path
+#   - Oscillation        penalizes back-and-forth motion
+#   - BaseObstacle       penalizes proximity to obstacles
+#   - GoalAlign          encourages heading toward the goal
+#   - PathAlign          encourages alignment with the global path
+#   - PathDist           encourages staying on the global path
+#   - GoalDist           encourages reducing distance to goal
+#
+# MERGE CONTRACT:
+#   Fragment. Merged with nav2_base.yaml by compose_params.py.
+#   Provides ONLY the FollowPath: block.
+#
+# Defaults below are taken from the canonical TurtleBot3 nav2_params.yaml.
+# Velocity-related fields are overridden by the robot profile via the
+# "dwb" controller_overrides block.
+# =============================================================================
+
+controller_server:
+  ros__parameters:
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: true
+
+      # ── Velocity limits (overridden by robot profile) ──────────────────
+      min_vel_x: 0.0
+      min_vel_y: 0.0
+      max_vel_x: 0.26
+      max_vel_y: 0.0
+      max_vel_theta: 1.0
+      min_speed_xy: 0.0
+      max_speed_xy: 0.26
+      min_speed_theta: 0.0
+
+      # ── Acceleration limits (overridden by robot profile) ──────────────
+      acc_lim_x: 2.5
+      acc_lim_y: 0.0
+      acc_lim_theta: 3.2
+      decel_lim_x: -2.5
+      decel_lim_y: 0.0
+      decel_lim_theta: -3.2
+
+      # ── Sampling resolution ────────────────────────────────────────────
+      vx_samples: 20
+      vy_samples: 5
+      vtheta_samples: 20
+
+      # ── Forward simulation ─────────────────────────────────────────────
+      sim_time: 1.7
+      linear_granularity: 0.05
+      angular_granularity: 0.025
+      transform_tolerance: 0.2
+
+      # ── Goal tolerance ─────────────────────────────────────────────────
+      xy_goal_tolerance: 0.30
+      trans_stopped_velocity: 0.25
+
+      # ── Trajectory generator behavior ──────────────────────────────────
+      short_circuit_trajectory_evaluation: true
+      stateful: true
+
+      # ── Critics ────────────────────────────────────────────────────────
+      critics:
+        - "RotateToGoal"
+        - "Oscillation"
+        - "BaseObstacle"
+        - "GoalAlign"
+        - "PathAlign"
+        - "PathDist"
+        - "GoalDist"
+
+      # Critic-specific tuning (note: DWB uses dotted-key format, not nested)
+      BaseObstacle.scale: 0.02
+      PathAlign.scale: 32.0
+      PathAlign.forward_point_distance: 0.1
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.1
+      PathDist.scale: 32.0
+      GoalDist.scale: 24.0
+      RotateToGoal.scale: 32.0
+      RotateToGoal.slowing_factor: 5.0
+      RotateToGoal.lookahead_time: -1.0
