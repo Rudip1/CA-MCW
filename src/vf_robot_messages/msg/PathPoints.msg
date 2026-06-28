@@ -1,0 +1,8 @@
+std_msgs/Header header
+uint64 my_seq
+geometry_msgs/Point[] data
+PossibleManeuvers possible_maneuvers
+PossibleManeuvers available_directions
+geometry_msgs/PoseStamped broom_left
+geometry_msgs/PoseStamped broom_right
+geometry_msgs/PoseStamped broom_forward

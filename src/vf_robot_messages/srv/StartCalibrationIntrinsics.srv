@@ -1,0 +1,9 @@
+# Request
+string camera_id
+string camera_model
+string distortion_model
+string output_file
+---
+# Response
+bool success
+string message

@@ -1,0 +1,10 @@
+float32 x
+float32 y
+float32 z
+uint32 r
+uint32 g
+uint32 b
+builtin_interfaces/Time stop_start
+builtin_interfaces/Time stop_end
+float64 uvc_intensity
+uint32 type

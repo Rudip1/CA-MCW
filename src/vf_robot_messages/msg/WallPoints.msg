@@ -1,0 +1,17 @@
+std_msgs/Header header
+uint64 my_seq
+geometry_msgs/Point frame_min_corner
+geometry_msgs/Point frame_max_corner
+geometry_msgs/Point[] left
+geometry_msgs/Point[] right
+geometry_msgs/Point[] front
+geometry_msgs/Point[] back
+geometry_msgs/Point[] history
+geometry_msgs/PoseStamped broom_left
+geometry_msgs/PoseStamped broom_right
+geometry_msgs/PoseStamped broom_forward
+geometry_msgs/PoseStamped broom_backward
+bool free_to_go_forward
+bool free_to_go_left
+bool free_to_go_right
+bool free_to_go_backward
